@@ -1,0 +1,17 @@
+{
+    "Type": 1,
+    "TextureSize": 32,
+    "Name": "Optimized Preservation",
+    "Version": "1.0.0",
+    "NetworkVersion": null,
+    "Description": "Decreases the crafting time of barrel-made foods and compost.",
+    "Website": "",
+    "ModID": "optimizedpreservation",
+    "Authors": [
+        "mathgeniuszach"
+    ],
+    "Side": "Server",
+    "RequiredOnClient": false,
+    "RequiredOnServer": true,
+    "Dependencies": {}
+}

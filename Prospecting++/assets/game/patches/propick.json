@@ -1,0 +1,6 @@
+[
+    {
+        "file": "game:itemtypes/tool/prospectingpick.json",
+        "op": "replace", "path": "/class", "value": "ItemProspectingPlusPlusPick"
+    }
+]

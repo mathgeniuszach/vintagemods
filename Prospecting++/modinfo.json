@@ -1,0 +1,12 @@
+{
+    "Type": "Code",
+    "Name": "Prospecting++",
+    "Version": "1.0.0",
+    "NetworkVersion": null,
+    "Description": "Adds double and triple radius prospecting modes with false negatives.",
+    "ModID": "prospectingplusplus",
+    "Authors": ["mathgeniuszach"],
+    "Side": "Universal",
+    "RequiredOnClient": true,
+    "RequiredOnServer": true
+}

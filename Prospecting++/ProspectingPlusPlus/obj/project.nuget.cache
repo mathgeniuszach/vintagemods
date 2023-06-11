@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "/GtCpfCE/hH7GA0zFOQCqda4HlVVUxzWuHFMQx1dlw7Lia76q94RzSX+Ue27lZvmCCZ0U32p2umpVC8advuiyw==",
+  "success": true,
+  "projectFilePath": "/home/mgz/Documents/Code/git/vintagemods/Prospecting++/ProspectingPlusPlus/ProspectingPlusPlus.csproj",
+  "expectedPackageFiles": [
+    "/home/mgz/.nuget/packages/microsoft.aspnetcore.app.ref/3.1.10/microsoft.aspnetcore.app.ref.3.1.10.nupkg.sha512"
+  ],
+  "logs": []
+}

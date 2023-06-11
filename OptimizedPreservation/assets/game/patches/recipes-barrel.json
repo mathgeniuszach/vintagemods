@@ -1,0 +1,54 @@
+[
+    {
+        "file": "game:recipes/barrel/cheesemaking/curdledmilk.json",
+        "op": "replace", "path": "/sealHours", "value": 36
+    },
+    {
+        "file": "game:recipes/barrel/cheesemaking/curdledmilk-alt.json",
+        "op": "replace", "path": "/sealHours", "value": 36
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/0/sealHours", "value": 72
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/1/sealHours", "value": 96
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/2/sealHours", "value": 96
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/3/sealHours", "value": 96
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/4/sealHours", "value": 96
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/5/sealHours", "value": 96
+    },
+    {
+        "file": "game:recipes/barrel/cider.json",
+        "op": "replace", "path": "/6/sealHours", "value": 96
+    },
+    {
+        "file": "game:recipes/barrel/compost.json",
+        "op": "replace", "path": "/sealHours", "value": 72
+    },
+    {
+        "file": "game:recipes/barrel/curedmeat.json",
+        "op": "replace", "path": "/sealHours", "value": 72
+    },
+    {
+        "file": "game:recipes/barrel/pickledlegume.json",
+        "op": "replace", "path": "/sealHours", "value": 48
+    },
+    {
+        "file": "game:recipes/barrel/pickledvegetable.json",
+        "op": "replace", "path": "/sealHours", "value": 48
+    }
+]

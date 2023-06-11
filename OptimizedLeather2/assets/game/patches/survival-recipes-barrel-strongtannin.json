@@ -1,0 +1,14 @@
+[
+  {
+    "op": "replace",
+    "path": "/0/sealHours",
+    "value": 10,
+    "file": "game:recipes/barrel/strongtannin.json"
+  },
+  {
+    "op": "replace",
+    "path": "/1/sealHours",
+    "value": 10,
+    "file": "game:recipes/barrel/strongtannin.json"
+  }
+]

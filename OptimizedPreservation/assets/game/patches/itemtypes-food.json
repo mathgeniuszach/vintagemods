@@ -1,0 +1,6 @@
+[
+    {
+        "file": "game:itemtypes/food/pickledvegetable.json",
+        "op": "add", "path": "/nutritionPropsByType/*-pumpkin", "value": {"saturation": 100, "foodcategory": "Vegetable"}
+    }
+]

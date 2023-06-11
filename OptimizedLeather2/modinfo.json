@@ -1,0 +1,18 @@
+{
+  "Type": 1,
+  "TextureSize": 32,
+  "Name": "Optimized Leather 2",
+  "Version": "2.0.0",
+  "NetworkVersion": null,
+  "Description": "Decreases the crafting time of leather.",
+  "Website": "",
+  "ModID": "optimizedleathertwo",
+  "Authors": [
+    "Ethonodon",
+    "mathgeniuszach"
+  ],
+  "Side": "Server",
+  "RequiredOnClient": false,
+  "RequiredOnServer": true,
+  "Dependencies": {}
+}

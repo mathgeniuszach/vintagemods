@@ -1,0 +1,26 @@
+[
+  {
+    "op": "replace",
+    "path": "/0/sealHours",
+    "value": 12,
+    "file": "game:recipes/barrel/preparedhide.json"
+  },
+  {
+    "op": "replace",
+    "path": "/1/sealHours",
+    "value": 12,
+    "file": "game:recipes/barrel/preparedhide.json"
+  },
+  {
+    "op": "replace",
+    "path": "/2/sealHours",
+    "value": 12,
+    "file": "game:recipes/barrel/preparedhide.json"
+  },
+  {
+    "op": "replace",
+    "path": "/3/sealHours",
+    "value": 12,
+    "file": "game:recipes/barrel/preparedhide.json"
+  }
+]
