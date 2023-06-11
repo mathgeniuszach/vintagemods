@@ -73,7 +73,7 @@ namespace ProspectingPlusPlus {
 
             if (toolMode >= 1 && radius > 0) {
                 double r = ProspectingPlusPlus.rng.NextDouble();
-                if (toolMode == 2 && r < 0.25 || toolMode >= 3 && r < 0.5) {
+                if (toolMode == 2 && r < 1.0/3.0 || toolMode >= 3 && r < 0.5) {
                     // False negatives
                     IPlayer byPlayer = null;
                     if (byEntity is EntityPlayer) byPlayer = world.PlayerByUid(((EntityPlayer)byEntity).PlayerUID);
