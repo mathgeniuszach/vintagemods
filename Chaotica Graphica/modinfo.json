@@ -1,0 +1,12 @@
+{
+    "Type": "Content",
+    "Name": "Chaotica Graphica",
+    "Version": "1.0.0",
+    "NetworkVersion": null,
+    "Description": "Something far worse than rust infected this mod...",
+    "ModID": "chaoticagraphica",
+    "Authors": ["mathgeniuszach"],
+    "Side": "Client",
+    "RequiredOnClient": true,
+    "RequiredOnServer": false
+}
