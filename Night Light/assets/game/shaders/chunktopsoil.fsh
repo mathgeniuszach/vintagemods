@@ -35,8 +35,6 @@ layout(location = 3) out vec4 outGPosition;
 #include colormap.fsh
 #include noise3d.ash
 
-#include brightpercent.fsh
-
 void main() 
 {
     vec4 mrgba = mix(rgba, vec4(1,1,1,rgba.a), MINIMUM_BRIGHTNESS_PERCENT);

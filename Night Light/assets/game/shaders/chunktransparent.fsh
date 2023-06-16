@@ -25,8 +25,6 @@ layout(location = 2) out vec4 outGlow;
 #include noise3d.ash
 #include colormap.fsh
 
-#include brightpercent.fsh
-
 void drawPixel(vec4 color) {
 	float weight = color.a * clamp(0.03 / (1e-5 + pow(gl_FragCoord.z / 200, 4.0)), 1e-2, 3e3);
 	

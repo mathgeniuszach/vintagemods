@@ -1,7 +1,7 @@
 {
-    "Type": "Content",
+    "Type": "Code",
     "Name": "Night Light",
-    "Version": "1.0.0",
+    "Version": "1.1.0",
     "NetworkVersion": null,
     "Description": "Brightens up the darkest nights.",
     "ModID": "nightlight",

@@ -38,10 +38,8 @@ uniform float frostAlpha = 0;
 #include noise3d.ash
 #include noise2d.ash
 
-#include brightpercent.fsh
-
 void main () {
-    vec4 mrgba = mix(rgba, vec4(1,1,1,rgba.a), MINIMUM_BRIGHTNESS_PERCENT);
+    vec4 mcolor = mix(color, vec4(1,1,1,color.a), MINIMUM_BRIGHTNESS_PERCENT);
     
 	float b = 1;
 	

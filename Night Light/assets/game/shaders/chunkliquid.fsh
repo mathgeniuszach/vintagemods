@@ -41,8 +41,6 @@ layout(location = 2) out vec4 outGlow;
 #include noise3d.ash
 #include colormap.fsh
 
-#include brightpercent.fsh
-
 
 vec2 droplethash3( vec2 p )
 {

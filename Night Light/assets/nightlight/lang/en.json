@@ -1,0 +1,5 @@
+{
+    "Command.Get": "Current min brightness value: {0}",
+    "Command.Set": "Set min brightness value to: {0}",
+    "Command.Set.Fail": "Invalid min brightness value!"
+}

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Harmony">
+      <HintPath>/usr/share/vintagestory/Lib/0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="VSAPI">
+      <HintPath>/usr/share/vintagestory/VintagestoryAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="VSLib">
+      <HintPath>/usr/share/vintagestory/VintagestoryLib.dll</HintPath>
+    </Reference>
+    <Reference Include="VSEssentials">
+      <HintPath>/usr/share/vintagestory/Mods/VSEssentials.dll</HintPath>
+    </Reference>
+    <Reference Include="VSCreative">
+      <HintPath>/usr/share/vintagestory/Mods/VSCreativeMod.dll</HintPath>
+    </Reference>
+    <Reference Include="VSSurvival">
+      <HintPath>/usr/share/vintagestory/Mods/VSSurvivalMod.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
