@@ -1,0 +1,12 @@
+{
+    "Type": "Content",
+    "Name": "Night Light",
+    "Version": "1.0.0",
+    "NetworkVersion": null,
+    "Description": "Brightens up the darkest nights.",
+    "ModID": "nightlight",
+    "Authors": ["mathgeniuszach"],
+    "Side": "Client",
+    "RequiredOnClient": true,
+    "RequiredOnServer": false
+}
