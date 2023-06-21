@@ -11,15 +11,64 @@ using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace ProspectingPlusPlus {
+    public class ProspectingNodeMode {
+        public int sizeMultiplier = 1;
+        public int costMultiplier = 1;
+        public double falseNegativePercent = 0.0;
+        public String id = "node";
+        public String icon = "textures/icons/rocks.svg";
+        public String description = "Node Search Mode (Short range, exact search)";
+        public ProspectingNodeMode() {}
+        public ProspectingNodeMode(int sizeMult, int costMult, double failPerc, String id, String icon, String desc) {
+            sizeMultiplier = sizeMult;
+            costMultiplier = costMult;
+            falseNegativePercent = failPerc;
+            this.id = id;
+            this.icon = icon;
+            description = desc;
+        }
+    }
+
+    public class ProspectingPlusPlusConfig {
+        public bool densityModeEnabled = true;
+        public ProspectingNodeMode[] modes = new ProspectingNodeMode[] {
+            new ProspectingNodeMode(1, 1, 0,
+                "node",
+                "textures/icons/rocks.svg",
+                "Node Search Mode (Short range, exact search)"
+            ),
+            new ProspectingNodeMode(2, 4, 1.0/3.0,
+                "doublenode",
+                "prospectingplusplus:textures/icons/doublerocks.svg",
+                "Double Node Search Mode (2x short range, 67% exact search)"
+            ),
+            new ProspectingNodeMode(3, 9, 0.5,
+                "triplenode",
+                "prospectingplusplus:textures/icons/triplerocks.svg",
+                "Triple Node Search Mode (3x short range, 50% exact search)"
+            )
+        };
+    }
 
     public class ProspectingPlusPlus : ModSystem
     {
         public static ICoreAPI api;
+        public static ProspectingPlusPlusConfig config;
         public static Random rng = new Random();
 
         public override void Start(ICoreAPI api)
         {
             ProspectingPlusPlus.api = api;
+
+            try {
+                config = api.LoadModConfig<ProspectingPlusPlusConfig>("prospecting++.json");
+            } catch {
+                config = null;
+            }
+            if (config == null) {
+                config = new ProspectingPlusPlusConfig();
+                api.StoreModConfig<ProspectingPlusPlusConfig>(config, "prospecting++.json");
+            }
 
             base.Start(api);
 
@@ -34,28 +83,35 @@ namespace ProspectingPlusPlus {
             var toolModes = ObjectCacheUtil.GetOrCreate(api, "proPlusPickToolModes", () => {
                 ObjectCacheUtil.Delete(api, "proPickToolModes");
 
+                int modeCount = ProspectingPlusPlus.config.modes.Length;
+                if (ProspectingPlusPlus.config.densityModeEnabled) modeCount++;
+
                 SkillItem[] modes;
                 if (api.World.Config.GetString("propickNodeSearchRadius").ToInt() > 0) {
-                    modes = new SkillItem[4];
-                    modes[0] = new SkillItem() { Code = new AssetLocation("density"), Name = Lang.Get("Density Search Mode (Long range, chance based search)") };
-                    modes[1] = new SkillItem() { Code = new AssetLocation("node"), Name = Lang.Get("Node Search Mode (Short range, exact search)") };
-                    modes[2] = new SkillItem() { Code = new AssetLocation("doublenode"), Name = Lang.Get("Double Node Search Mode (2x short range, 75% exact search)") };
-                    modes[3] = new SkillItem() { Code = new AssetLocation("triplenode"), Name = Lang.Get("Triple Node Search Mode (3x short range, 50% exact search)") };
+                    modes = new SkillItem[modeCount];
+                    int n = 0;
+                    if (ProspectingPlusPlus.config.densityModeEnabled) {
+                        modes[0] = new SkillItem() { Code = new AssetLocation("density"), Name = Lang.Get("Density Search Mode (Long range, chance based search)") };
+                        n++;
+                        if (capi != null) {
+                            modes[0].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("textures/icons/heatmap.svg"), 48, 48, 5, ColorUtil.WhiteArgb));
+                            modes[0].TexturePremultipliedAlpha = false;
+                        }
+                    }
+                    for (int i = 0; n < modeCount; i++, n++) {
+                        ProspectingNodeMode nmode = ProspectingPlusPlus.config.modes[i];
+                        modes[n] = new SkillItem() { Code = new AssetLocation(nmode.id), Name = Lang.Get(nmode.description) };
+                        if (capi != null) {
+                            modes[n].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation(nmode.icon), 48, 48, 5, ColorUtil.WhiteArgb));
+                            modes[n].TexturePremultipliedAlpha = false;
+                        }
+                    }
                 } else {
                     modes = new SkillItem[1];
                     modes[0] = new SkillItem() { Code = new AssetLocation("density"), Name = Lang.Get("Density Search Mode (Long range, chance based search)") };
-                }
-
-                if (capi != null) {
-                    modes[0].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("textures/icons/heatmap.svg"), 48, 48, 5, ColorUtil.WhiteArgb));
-                    modes[0].TexturePremultipliedAlpha = false;
-                    if (modes.Length > 1) {
-                        modes[1].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("textures/icons/rocks.svg"), 48, 48, 5, ColorUtil.WhiteArgb));
-                        modes[1].TexturePremultipliedAlpha = false;
-                        modes[2].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("prospectingplusplus:textures/icons/doublerocks.svg"), 48, 48, 5, ColorUtil.WhiteArgb));
-                        modes[2].TexturePremultipliedAlpha = false;
-                        modes[3].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("prospectingplusplus:textures/icons/triplerocks.svg"), 48, 48, 5, ColorUtil.WhiteArgb));
-                        modes[3].TexturePremultipliedAlpha = false;
+                    if (capi != null) {
+                        modes[0].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("textures/icons/heatmap.svg"), 48, 48, 5, ColorUtil.WhiteArgb));
+                        modes[0].TexturePremultipliedAlpha = false;
                     }
                 }
 
@@ -73,7 +129,8 @@ namespace ProspectingPlusPlus {
 
             if (toolMode >= 1 && radius > 0) {
                 double r = ProspectingPlusPlus.rng.NextDouble();
-                if (toolMode == 2 && r < 1.0/3.0 || toolMode >= 3 && r < 0.5) {
+                ProspectingNodeMode nmode = ProspectingPlusPlus.config.modes[toolMode-1];
+                if (r < nmode.falseNegativePercent) {
                     // False negatives
                     IPlayer byPlayer = null;
                     if (byEntity is EntityPlayer) byPlayer = world.PlayerByUid(((EntityPlayer)byEntity).PlayerUID);
@@ -88,10 +145,10 @@ namespace ProspectingPlusPlus {
                         }
                     }
                 } else {
-                    ProbeBlockNodeMode(world, byEntity, itemslot, blockSel, radius * toolMode);
+                    ProbeBlockNodeMode(world, byEntity, itemslot, blockSel, radius * nmode.sizeMultiplier);
                 }
 
-                damage = 2 * toolMode;
+                damage = 2 * nmode.costMultiplier;
             } else {
                 ProbeBlockDensityMode(world, byEntity, itemslot, blockSel);
             }
