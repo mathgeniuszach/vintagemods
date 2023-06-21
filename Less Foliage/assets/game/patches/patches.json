@@ -17,6 +17,10 @@
     {file: "game:blocktypes/plant/tallgrass.json", op: "remove", path: "/randomizeRotations"},
     {file: "game:blocktypes/plant/bamboo.json", op: "remove", path: "/randomizeRotations"},
     
+    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/guiTransform"},
+    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/guiTransform"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/guiTransform"},
+    
     /*
     {file: "game:blocktypes/plant/tallgrass.json", op: "remove", path: "/randomizeRotations"},
     {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/shape/rotateY"},
@@ -24,19 +28,16 @@
     {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/lod0Shape/rotateY"},
     {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/lod0Shape/alternates"},
     
-    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/guiTransform"},
     {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/shape/rotateY"},
     {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/shape/alternates"},
     {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/lod0Shape/rotateY"},
     {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/lod0Shape/alternates"},
     
-    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/guiTransform"},
     {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/shape/rotateY"},
     {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/shape/alternates"},
     {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/lod0Shape/rotateY"},
     {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/lod0Shape/alternates"},
     
-    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/guiTransform"},
     {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-1/rotateY"},
     {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-1/alternates"},
     {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-2/rotateY"},
