@@ -19,8 +19,6 @@ namespace NightLight {
         public static NightLightConfig config;
         public static Harmony harmony;
 
-        public static Random rng = new Random();
-
         public override bool ShouldLoad(EnumAppSide side)
         {
             return side == EnumAppSide.Client;

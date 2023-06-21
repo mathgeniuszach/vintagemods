@@ -1,0 +1,53 @@
+{
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textures": {
+		"leaves": "block/plant/bamboo/leaves-small",
+		"stem": "block/plant/bamboo/stem-brown"
+	},
+	"elements": [
+		{
+			"name": "FoliageCube",
+			"from": [ 0.1, 0.1, 0.1 ], 
+			"to": [ 15.9, 15.9, 15.9 ], 
+			"climateColorMap": "climatePlantTint",
+			"renderPass": 1,
+			"windMode": 5,
+			"faces": {
+				"north": { "windMode": [5,5,5,5], "texture": "#leaves", "uv": [ 0.0, 0.0, 15.5, 15.5 ] },
+				"east": { "windMode": [5,5,5,5], "texture": "#leaves", "uv": [ 0.0, 0.0, 15.5, 15.5 ] },
+				"south": { "windMode": [5,5,5,5], "texture": "#leaves", "uv": [ 0.0, 0.0, 15.5, 15.5 ] },
+				"west": { "windMode": [5,5,5,5], "texture": "#leaves", "uv": [ 0.0, 0.0, 15.5, 15.5 ] },
+				"up": { "windMode": [5,5,5,5], "texture": "#leaves", "uv": [ 0.0, 0.0, 15.5, 15.5 ] },
+				"down": { "windMode": [5,5,5,5], "texture": "#leaves", "uv": [ 0.0, 0.0, 15.5, 15.5 ] }
+			}
+		},
+		{
+			"name": "StalkSE",
+			"from": [ 9.5, 0.0, 9.5 ], 
+			"to": [ 11.5, 8.01, 11.5 ], 
+			"windMode": 4,
+			"faces": {
+				"north": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 5.0, 8.0, 7.0, 16.0 ] },
+				"east": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 4.0, 8.0, 6.0, 16.0 ] },
+				"south": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 3.0, 8.0, 5.0, 16.0 ] },
+				"west": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 1.0, 8.0, 3.0, 16.0 ] },
+				"up": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 8.0, 14.0, 10.0, 16.0 ] },
+				"down": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 8.0, 14.0, 10.0, 16.0 ] }
+			}
+		},
+		{
+			"name": "StalkNW",
+			"from": [ 5.5, 0.0, 5.5 ], 
+			"to": [ 7.5, 14.0, 7.5 ], 
+			"windMode": 4,
+			"faces": {
+				"north": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 0.0, 2.0, 2.0, 16.0 ] },
+				"east": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 5.0, 2.0, 7.0, 16.0 ] },
+				"south": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 3.0, 2.0, 5.0, 16.0 ] },
+				"west": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 6.0, 2.0, 8.0, 16.0 ] },
+				"up": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 8.0, 14.0, 10.0, 16.0 ] },
+				"down": { "windMode": [5,5,5,5], "texture": "#stem", "uv": [ 8.0, 14.0, 10.0, 16.0 ] }
+			}
+		}
+	]}

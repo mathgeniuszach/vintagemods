@@ -1,0 +1,12 @@
+{
+    "Type": "Content",
+    "Name": "Less Foliage",
+    "Version": "1.0.0",
+    "NetworkVersion": null,
+    "Description": "Restricts leaves, grass, plants, and overall shrubbery's size.",
+    "ModID": "lessfoliage",
+    "Authors": ["mathgeniuszach"],
+    "Side": "Client",
+    "RequiredOnClient": true,
+    "RequiredOnServer": false
+}

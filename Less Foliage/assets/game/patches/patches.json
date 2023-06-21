@@ -1,0 +1,73 @@
+[
+    {file: "game:blocktypes/plant/flower.json", op: "add", path: "/shape", value: {scale: 0.8}},
+    {file: "game:blocktypes/plant/flower-lupine.json", op: "add", path: "/shape/scale", value: 0.8},
+    
+    {file: "game:blocktypes/plant/croton.json", op: "remove", path: "/randomSizeAdjust"},
+    {file: "game:blocktypes/plant/fern.json", op: "remove", path: "/randomSizeAdjust"},
+    
+    {file: "game:blocktypes/plant/crop/dead.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/amaranth.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/bellpepper.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/cabbage.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/cassava.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/peanut.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/pineapple.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/crop/sunflower.json", op: "remove", path: "/randomizeRotations"},
+    
+    {file: "game:blocktypes/plant/tallgrass.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/bamboo.json", op: "remove", path: "/randomizeRotations"},
+    
+    /*
+    {file: "game:blocktypes/plant/tallgrass.json", op: "remove", path: "/randomizeRotations"},
+    {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/shape/rotateY"},
+    {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/shape/alternates"},
+    {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/lod0Shape/rotateY"},
+    {file: "game:blocktypes/plant/leaves/bamboo.json", op: "remove", path: "/lod0Shape/alternates"},
+    
+    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/guiTransform"},
+    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/shape/rotateY"},
+    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/shape/alternates"},
+    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/lod0Shape/rotateY"},
+    {file: "game:blocktypes/plant/leaves/branchy.json", op: "remove", path: "/lod0Shape/alternates"},
+    
+    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/guiTransform"},
+    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/shape/rotateY"},
+    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/shape/alternates"},
+    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/lod0Shape/rotateY"},
+    {file: "game:blocktypes/plant/leaves/normal.json", op: "remove", path: "/lod0Shape/alternates"},
+    
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/guiTransform"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-1/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-1/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-2/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-2/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-3/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-3/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-4/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-4/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-5/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/shapeByType/*-5/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-1/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-1/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-2/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-2/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-3/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-3/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-4/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-4/alternates"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-5/rotateY"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/lod0ShapeByType/*-5/alternates"},
+    */
+    
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "remove", path: "/textures"},
+    {file: "game:blocktypes/plant/leaves/narrow.json", op: "add", path: "/texturesByType", value: {
+        "*-5": {
+		    smallleaves: { base: "block/plant/leaves/small/greenspirecypress*" },
+		    largeleaves: { base: "block/plant/leaves/large/greenspirecypress1*" }
+        },
+        "*": {
+		    smallleaves: { base: "block/plant/leaves/large/greenspirecypress1*" },
+		    largeleaves: { base: "block/plant/leaves/large/greenspirecypress1*" }
+        }
+    }}
+]

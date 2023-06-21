@@ -1,0 +1,76 @@
+{
+	"editor": {
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureSizes": {
+		"leaves-large": [32,32]
+	},
+	"textures": {
+		"leaves-large": "block/plant/bamboo/leaves-large"
+	},
+	"elements": [
+		{
+			"name": "Foliage1",
+			"from": [ 0.0, 0.0, 8.0 ], 
+			"to": [ 16.0, 16.0, 8.0 ], 
+			"shade": false,
+			"gradientShade": true,
+			"climateColorMap": "climatePlantTint",
+			"renderPass": 1,
+			"rotationOrigin": [ 8.0, 8.0, 8.0 ],
+			"rotationX": 0.7,
+			"rotationY": -22.5,
+			"rotationZ": -0.54,
+			"faces": {
+				"north": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 32.0 ], "enabled": false },
+				"east": { "texture": "#null", "uv": [ 0.0, 0.0, 0.5, 32.0 ], "enabled": false },
+				"south": { "texture": "#leaves-large", "uv": [ 0.0, 0.0, 32.0, 32.0 ], "rotation": 180, "snapUv": false, "windMode": [3,3,3,3], "windData": [0,0,1,1] },
+				"west": { "texture": "#null", "uv": [ 0.0, 0.0, 0.5, 32.0 ], "enabled": false },
+				"up": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 0.5 ], "enabled": false },
+				"down": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 0.5 ], "enabled": false }
+			}
+		},
+		{
+			"name": "Foliage2",
+			"from": [ 0.0, 0.0, 8.0 ], 
+			"to": [ 16.0, 16.0, 8.0 ], 
+			"shade": false,
+			"gradientShade": true,
+			"climateColorMap": "climatePlantTint",
+			"renderPass": 1,
+			"rotationOrigin": [ 8.0, 8.0, 8.0 ],
+			"rotationX": 0.51,
+			"rotationY": 42.5,
+			"rotationZ": -0.43,
+			"faces": {
+				"north": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 32.0 ], "enabled": false },
+				"east": { "texture": "#null", "uv": [ 0.0, 0.0, 0.5, 32.0 ], "enabled": false },
+				"south": { "texture": "#leaves-large", "uv": [ 0.0, 0.0, 32.0, 32.0 ], "rotation": 180, "windMode": [3,3,3,3], "windData": [0,0,1,1] },
+				"west": { "texture": "#null", "uv": [ 0.0, 0.0, 0.5, 32.0 ], "enabled": false },
+				"up": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 0.5 ], "enabled": false },
+				"down": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 0.5 ], "enabled": false }
+			}
+		},
+		{
+			"name": "Foliage3",
+			"from": [ 0.0, 0.0, 8.0 ], 
+			"to": [ 16.0, 16.0, 8.0 ], 
+			"shade": false,
+			"gradientShade": true,
+			"climateColorMap": "climatePlantTint",
+			"renderPass": 1,
+			"rotationOrigin": [ 8.0, 8.0, 8.0 ],
+			"rotationX": 0.42,
+			"rotationY": -82.5,
+			"rotationZ": -0.33,
+			"faces": {
+				"north": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 32.0 ], "enabled": false },
+				"east": { "texture": "#null", "uv": [ 0.0, 0.0, 0.5, 32.0 ], "enabled": false },
+				"south": { "texture": "#leaves-large", "uv": [ 0.0, 0.0, 32.0, 32.0 ], "rotation": 180, "windMode": [3,3,3,3], "windData": [0,0,1,1] },
+				"west": { "texture": "#null", "uv": [ 0.0, 0.0, 0.5, 32.0 ], "enabled": false },
+				"up": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 0.5 ], "enabled": false },
+				"down": { "texture": "#null", "uv": [ 0.0, 0.0, 32.0, 0.5 ], "enabled": false }
+			}
+		}
+	]}
