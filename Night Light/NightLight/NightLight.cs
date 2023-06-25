@@ -58,6 +58,11 @@ namespace NightLight {
                     })
                 .EndSubCommand();
         }
+        
+        public override void Dispose() {
+            harmony.UnpatchAll();
+            base.Dispose()
+        }
     }
 
 
