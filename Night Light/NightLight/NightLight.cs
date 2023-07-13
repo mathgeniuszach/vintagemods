@@ -13,6 +13,7 @@ namespace NightLight {
         public double MinimumBrightnessPercent = 0.1;
     }
 
+    [HarmonyPatch]
     public class NightLight : ModSystem
     {
         public static ICoreAPI api;
@@ -57,24 +58,22 @@ namespace NightLight {
                         return TextCommandResult.Success(Lang.Get("nightlight:Command.Set", args[0].ToString()));
                     })
                 .EndSubCommand();
+            
+            api.Shader.ReloadShaders();
         }
         
         public override void Dispose() {
             harmony.UnpatchAll();
-            base.Dispose()
+            base.Dispose();
         }
-    }
 
-
-    [HarmonyPatch]
-    class NightLightPatches {
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(ShaderRegistry), "registerDefaultShaderCodePrefixes")]
         public static void registerDefaultShaderCodePrefixes(ShaderProgram program) {
             double mbp = NightLight.config?.MinimumBrightnessPercent ?? 0.1;
 
-            Shader fragmentShader0 = program.FragmentShader;
-            fragmentShader0.PrefixCode = fragmentShader0.PrefixCode + "#define MINIMUM_BRIGHTNESS_PERCENT " + mbp.ToString() + "\r\n";
+            Shader vxs = program.VertexShader;
+            vxs.PrefixCode = vxs.PrefixCode + "#define MINIMUM_BRIGHTNESS_PERCENT " + mbp.ToString() + "\r\n";
         }
     }
 
