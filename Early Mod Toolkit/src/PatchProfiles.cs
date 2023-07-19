@@ -117,7 +117,9 @@ namespace EMTK {
 
             string[] names = profiles.ToArray();
 
-            return composer.AddRichtext(
+            CairoFont smallFont = CairoFont.WhiteSmallText();
+
+            composer.AddRichtext(
                 "Mods (<a href='https://mods.vintagestory.at/emtk'>EMTK v" + EMTK.version + "</a>" + (EMTK.updateAvailable ? " Update!!!" : "") + ")",
                 CairoFont.WhiteSmallishText(),
                 ElementBounds.Fixed(EnumDialogArea.LeftTop, 0.0, 0.0, 690.0, 0.0),
@@ -131,12 +133,18 @@ namespace EMTK {
             ).AddIconButton(
                 "plus", addModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -381.0, -1.0, 30.0, 30.0)
+            ).AddAutoSizeHoverText(
+                Lang.Get("Adds a blank new mod profile."), smallFont, 170, ElementBounds.Fixed(EnumDialogArea.RightTop, -381.0, -1.0, 30.0, 30.0)
             ).AddIconButton(
                 "eraser", deleteModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -351.0, -1.0, 30.0, 30.0)
+            ).AddAutoSizeHoverText(
+                Lang.Get("Deletes the current mod profile."), smallFont, 170, ElementBounds.Fixed(EnumDialogArea.RightTop, -351.0, -1.0, 30.0, 30.0)
             ).AddIconButton(
                 "paintbrush", renameModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -321.0, -1.0, 30.0, 30.0)
+            ).AddAutoSizeHoverText(
+                Lang.Get("Renames the current mod profile."), smallFont, 170, ElementBounds.Fixed(EnumDialogArea.RightTop, -321.0, -1.0, 30.0, 30.0)
             ).AddDropDown(
                 names, names, profiles.BinarySearch(activeProfile), changeModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -16.0, 0.0, 300.0, 30.0)
@@ -147,6 +155,8 @@ namespace EMTK {
                 Lang.Get("Update All"), updateMods,
                 ElementBounds.Fixed(EnumDialogArea.RightBottom, -310.0, 12.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
             );
+
+            return composer;
         }
 
         public static bool browseMods() {

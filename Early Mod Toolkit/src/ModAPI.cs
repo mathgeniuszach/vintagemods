@@ -30,7 +30,7 @@ namespace EMTK {
         public static Dictionary<string, APIModSummary> modListSummary = new Dictionary<string, APIModSummary>();
         public static List<CustomModCellEntry> modCells = new List<CustomModCellEntry>();
 
-        public static APIStatusModList modListCache;
+        public static APIStatusModList modListCache = null;
         public static Dictionary<string, APIStatusModInfo> modInfoCache = new Dictionary<string, APIStatusModInfo>();
 
         public static Dictionary<string, SemVer> latestVersionCache = new Dictionary<string, SemVer>();
@@ -133,15 +133,15 @@ namespace EMTK {
                             string modid = summary.modidstrs[0].ToLower();
                             modCells.Add(new CustomModCellEntry() {
                                 ModID = modid,
-                                Keywords = String.Join(" ", modid, summary.name, summary.author, summary.tags).ToLower(),
+                                Keywords = String.Join(" ", modid, summary?.name, summary?.author, summary?.tags).ToLower(),
                                 Summary = summary,
-                                Title = summary.name,
+                                Title = summary?.name,
                                 DetailText = String.Format("{0}\n{1} - {2}",
-                                    summary.author,
+                                    summary?.author,
                                     char.ToUpper(summary.side[0]) + summary.side.Substring(1),
                                     String.Join(", ", summary.tags)
                                 ),
-                                RightTopText = String.Format("{0} Downloads,\n{1} Follows, {2} Comments", summary.downloads, summary.follows, summary.comments),
+                                RightTopText = String.Format("{0} Downloads,\n{1} Follows, {2} Comments", summary?.downloads, summary?.follows, summary?.comments),
                                 TitleFont = medFont,
                                 DetailTextFont = smallFont,
                             });
@@ -198,12 +198,12 @@ namespace EMTK {
 
                         string name = l.Substring(i, e-i);
 
-                        i = name.IndexOf("-");
+                        i = name.IndexOf("-")+1;
                         e = name.LastIndexOf(".");
-                        if (i < 0 || e < 0) continue;
+                        if (i <= 0 || e < 0) continue;
 
-                        SemVer ver = SemVer.Parse(name.Substring(i, e-i));
-                        if (ver <= SemVer.Parse(EMTK.version)) return;
+                        Version ver = new Version(name.Substring(i, e-i));
+                        if (ver <= new Version(EMTK.version)) return;
 
                         EMTK.updateAvailable = true;
                     }

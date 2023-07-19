@@ -147,8 +147,6 @@ namespace EMTK {
             foreach (Thread t in threads) t.Start();
             foreach (Thread t in threads) t.Join();
 
-            Console.WriteLine("hi");
-
             EMTK.sm.LoadScreen(new GuiScreenInfo(
                 "Updated all mods." + (failed.IsEmpty ? "" : "\r\nThese mods failed the update: " + String.Join(", ", failed)),
                 () => {
