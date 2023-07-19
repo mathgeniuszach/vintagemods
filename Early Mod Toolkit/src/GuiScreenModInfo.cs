@@ -1,11 +1,12 @@
-using HarmonyLib;
-using ProperVersion;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+
+using HarmonyLib;
+using ProperVersion;
 
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -283,7 +284,6 @@ namespace EMTK {
             File.Move(cfile, Path.Combine(GamePaths.DataPathMods, filename));
 
             // Reload mods and mod screen
-            ScreenManager.GuiComposers.Dispose("mainmenu-modinfo");
 
             EMTK.sm.loadMods();
             EMTK.FullEarlyReloadMods();
@@ -292,8 +292,8 @@ namespace EMTK {
 
             if (parentScreen is GuiScreenMods) {
                 invalidateParentScreen.Invoke(parentScreen, null);
-                invalidate();
             }
+            invalidate();
 
             return true;
         }

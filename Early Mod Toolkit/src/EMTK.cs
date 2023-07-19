@@ -1,11 +1,11 @@
-using HarmonyLib;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+
+using HarmonyLib;
 
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -17,16 +17,51 @@ using Vintagestory.Common;
 
 namespace EMTK {
 
+    // TODO: Dana wants load times
+
+    public class EMTKConfig {
+        private static EMTKConfig instance = null;
+
+        public static EMTKConfig Instance {
+            get {
+                if (instance != null) return instance;
+
+                try {
+                    instance = EarlyAPI.LoadModConfig<EMTKConfig>("emtk.json");
+                } catch {}
+                if (instance == null) {
+                    instance = new EMTKConfig();
+                    Save();
+                }
+                
+                return instance;
+            }
+        }
+
+        public static void Save() {
+            EarlyAPI.StoreModConfig<EMTKConfig>(instance, "emtk.json");
+        }
+
+        public HashSet<string> excludedFromUpdates = new HashSet<string>();
+    }
+
     [HarmonyPatch]
     public static class EMTK {
         public static Harmony harmony;
         public static volatile ScreenManager sm;
 
+        public static volatile bool updateAvailable = false;
         public static string version;
         public static List<CachedMod> cachedMods = new List<CachedMod>();
         public static Dictionary<string, ModContainer> loadedMods = new Dictionary<string, ModContainer>();
 
-        public static void EarlyLoadMods() {
+        public static EMTKConfig Config {
+            get {
+                return EMTKConfig.Instance;
+            }
+        }
+
+        public static void EarlyLoadMods(bool reload = true) {
             while (sm == null) Thread.Sleep(100);
 
             ModLoader modloader = (ModLoader) AccessTools.Field(typeof(ScreenManager), "modloader").GetValue(sm);
@@ -35,7 +70,7 @@ namespace EMTK {
             loadedMods.Clear();
             foreach (ModContainer mod in ogMods) {
                 if (mod?.Info?.ModID == null) continue;
-                loadedMods[mod.Info.ModID] = mod;
+                loadedMods[mod.Info.ModID.ToLower()] = mod;
             }
 
             // Collect enabled mods and the mod loader
@@ -109,7 +144,7 @@ namespace EMTK {
             ScreenManager.Platform.Logger.Notification("EMTK: Early loading complete!");
         }
 
-        public static void EarlyUnloadMods() {
+        public static void EarlyUnloadMods(bool reload = true) {
             while (sm == null) Thread.Sleep(100);
             List<ModContainer> mods = (List<ModContainer>) AccessTools.Field(typeof(ScreenManager), "verifiedMods").GetValue(sm);
 
@@ -208,8 +243,8 @@ namespace EMTK {
                 }
             }
 
-            EarlyUnloadMods();
-            EarlyLoadMods();
+            EarlyUnloadMods(false);
+            EarlyLoadMods(false);
 
             foreach (CachedMod mod in cachedMods) {
                 if (mod.emi != null && mod.emi.ReloadTitle) {

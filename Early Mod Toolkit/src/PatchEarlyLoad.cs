@@ -1,14 +1,19 @@
-using HarmonyLib;
-
+using System.Reflection;
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
+
+using HarmonyLib;
+
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.Client;
 using Vintagestory.ClientNative;
 using Vintagestory.Common;
+using Vintagestory.API.Client;
+using Vintagestory.API.Server;
 
 namespace EMTK {
     [HarmonyPatch]
@@ -74,6 +79,63 @@ namespace EMTK {
                     new BitmapExternal(Path.Combine(GamePaths.AssetsPath, "game/textures/gui/3rdpartymodicon.png"))
                 });
             }
+        }
+
+        public static Stopwatch timer = new Stopwatch();
+
+        public static bool IsOverride(MethodInfo m) {
+            return m.GetBaseDefinition().DeclaringType != m.DeclaringType;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ModLoader), "TryRunModPhase")]
+        public static bool TryRunModPhase(Mod mod, ModSystem system, ICoreAPI api, ModRunPhase phase, ref bool __result) {
+            if (mod?.Info?.Authors[0] == "Tyron") return true;
+
+            try {
+                MethodInfo m = null;
+                bool useApi = true;
+				switch (phase) {
+                    case ModRunPhase.Pre:
+                        m = system.GetType().GetMethod("StartPre");
+                        break;
+                    case ModRunPhase.Start:
+                        m = system.GetType().GetMethod("Start");
+                        break;
+                    case ModRunPhase.AssetsLoaded:
+                        m = system.GetType().GetMethod("AssetsLoaded");
+                        break;
+                    case ModRunPhase.AssetsFinalize:
+                        m = system.GetType().GetMethod("AssetsFinalize");
+                        break;
+                    case ModRunPhase.Normal:
+                        if (api.Side == EnumAppSide.Client) {
+                            m = system.GetType().GetMethod("StartClientSide");
+                        } else {
+                            m = system.GetType().GetMethod("StartServerSide");
+                        }
+                        break;
+                    case ModRunPhase.Dispose:
+                        m = system.GetType().GetMethod("Dispose");
+                        useApi = false;
+                        break;
+				}
+                if (IsOverride(m)) {
+                    mod.Logger.Debug("Running system \"{0}\" phase \"{1}\"", system.GetType().Name, phase);
+                    timer.Restart();
+                    m.Invoke(system, useApi ? new object[] {api} : null);
+                    timer.Stop();
+                    mod.Logger.Debug("Completed in {0}", timer.Elapsed);
+                }
+                __result = true;
+				return false;
+			} catch (Exception ex) {
+				mod.Logger.Error("An exception was thrown when trying to run mod system \"{0}\" phase \"{1}\":\n{2}", new object[] { system.GetType().Name, phase, ex });
+            } finally {
+                timer.Stop();
+            }
+            __result = false;
+            return false;
         }
     }
 

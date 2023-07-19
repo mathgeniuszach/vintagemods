@@ -1,13 +1,11 @@
-using HarmonyLib;
-using ProperVersion;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
-using System.Threading;
-using System.Threading.Tasks;
+
+using HarmonyLib;
+
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.Client;
@@ -31,6 +29,11 @@ namespace EMTK {
                     new CodeInstruction(OpCodes.Ldc_R8, 64.0),
                     CodeInstruction.Call(typeof(GuiElement), "scaled")
                 )
+                .End()
+                .MatchStartBackwards(new CodeMatch(instr => instr.opcode == OpCodes.Brfalse))
+                .Advance(-2)
+                .SetAndAdvance(OpCodes.Nop, null)
+                .SetAndAdvance(OpCodes.Ldc_I4_1, null)
                 .InstructionEnumeration();
         }
 
@@ -44,17 +47,6 @@ namespace EMTK {
                     new CodeInstruction(OpCodes.Ldc_R8, 69.0), // Extra 5 pixels for the image
                     CodeInstruction.Call(typeof(GuiElement), "scaled")
                 )
-                .InstructionEnumeration();
-        }
-
-        [HarmonyTranspiler]
-        [HarmonyPatch(typeof(GuiScreenMods), "InitGui")]
-        public static IEnumerable<CodeInstruction> InitGui(IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
-            return new CodeMatcher(instructions, generator)
-                .MatchStartForward(new CodeMatch(OpCodes.Ldstr, "Installed mods"))
-                .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0), CodeInstruction.Call(typeof(PatchProfiles), "modModScreen"))
-                .MatchStartForward(new CodeMatch(OpCodes.Ldc_R8, -150.0))
-                .SetOperandAndAdvance(-140.0)
                 .InstructionEnumeration();
         }
 
@@ -89,6 +81,22 @@ namespace EMTK {
             return false; // Not technically necessary
         }
 
+        [HarmonyTranspiler]
+        [HarmonyPatch(typeof(GuiScreenMods), "InitGui")]
+        public static IEnumerable<CodeInstruction> InitGui(IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
+            return new CodeMatcher(instructions, generator)
+                .MatchStartForward(new CodeMatch(OpCodes.Ldstr, "Installed mods"))
+                .RemoveInstruction()
+                .InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    CodeInstruction.Call(typeof(PatchProfiles), "modModScreen"),
+                    new CodeInstruction(OpCodes.Ldstr, "")
+                )
+                .MatchStartForward(new CodeMatch(OpCodes.Ldc_R8, -150.0))
+                .SetOperandAndAdvance(-140.0)
+                .InstructionEnumeration();
+        }
+
         public static GuiComposer modModScreen(GuiComposer composer, GuiScreenMods gui) {
             gsm = gui;
             if (!Directory.Exists(Initializer.modProfilePath)) Directory.CreateDirectory(Initializer.modProfilePath);
@@ -110,9 +118,9 @@ namespace EMTK {
             string[] names = profiles.ToArray();
 
             return composer.AddRichtext(
-                "<a href='https://www.mathgeniuszach.com'>EMTK v" + EMTK.version + "</a>",
+                "Mods (<a href='https://mods.vintagestory.at/emtk'>EMTK v" + EMTK.version + "</a>" + (EMTK.updateAvailable ? " Update!!!" : "") + ")",
                 CairoFont.WhiteSmallishText(),
-                ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 8.0, 690.0, 0.0),
+                ElementBounds.Fixed(EnumDialogArea.LeftTop, 0.0, 0.0, 690.0, 0.0),
                 null
             // ).AddIconButton(
             //     "copy", copyModProfile,
@@ -150,69 +158,13 @@ namespace EMTK {
             List<ModContainer> mods = (List<ModContainer>) AccessTools.Field(typeof(ScreenManager), "allMods").GetValue(EMTK.sm);
             List<string> modUpdates = ModAPI.GetUpdates(mods);
 
-            if (modUpdates.Count <= 0) {
+            if (modUpdates == null) {
+                EMTK.sm.LoadScreen(new GuiScreenInfo(Lang.Get("Could not check for mod updates, try again later"), () => EMTK.sm.LoadScreen(gsm), EMTK.sm, gsm));
+            } else if (modUpdates.Count <= 0) {
                 EMTK.sm.LoadScreen(new GuiScreenInfo(Lang.Get("All mods are up to date!"), () => EMTK.sm.LoadScreen(gsm), EMTK.sm, gsm));
-                return true;
+            } else {
+                EMTK.sm.LoadScreen(new GuiScreenUpdateMods(modUpdates, EMTK.sm, gsm));
             }
-            
-            // Prompt for downloading mods
-            EMTK.sm.LoadScreen((GuiScreen)Activator.CreateInstance(
-                AccessTools.TypeByName("GuiScreenConfirmAction"),
-                new object[] {
-                    "Update " + modUpdates.Count + " Mods: " + String.Join(", ", modUpdates.Select(id => {
-                        return id + "@" + ModAPI.latestVersionCache[id].ToString();
-                    })),
-                    new Action<bool>(confirmed => {
-                        if (!confirmed) EMTK.sm.LoadScreen(gsm);
-
-                        ConcurrentBag<Tuple<APIModRelease, ModContainer>> updates = new ConcurrentBag<Tuple<APIModRelease, ModContainer>>();
-                        foreach (string modid in modUpdates) {
-                            updates.Add(new Tuple<APIModRelease, ModContainer>(ModAPI.latestReleaseCache[modid], EMTK.loadedMods[modid]));
-                        }
-
-                        ConcurrentBag<string> failed = new ConcurrentBag<string>();
-
-                        // Download and install all mods in a concurrent way
-                        List<Task> tasks = new List<Task>();
-                        for (int i = 0; i < 8; i++) {
-                            tasks.Add(new Task(async () => {
-                                while (true) {
-                                    Tuple<APIModRelease, ModContainer> tuple;
-                                    if (!updates.TryTake(out tuple)) return;
-
-                                    // Download mod file
-                                    try {
-                                        string fileloc = await ModAPI.GetAssetAsync(tuple.Item1.mainfile, 3);
-                                        if (fileloc == null) failed.Add(tuple.Item1.modidstr);
-
-                                        // Delete old mod
-                                        if (Directory.Exists(tuple.Item2.SourcePath)) {
-                                            Directory.Delete(tuple.Item2.SourcePath, true);
-                                        } else {
-                                            File.Delete(tuple.Item2.SourcePath);
-                                        }
-
-                                        // Install new mod
-                                        File.Move(fileloc, Path.Combine(GamePaths.DataPathMods, tuple.Item1.filename));
-                                    } catch {
-                                        failed.Add(tuple.Item1.modidstr);
-                                    }
-                                }
-                            }));
-                        }
-                        Task.WaitAll(tasks.ToArray());
-
-                        EMTK.sm.LoadScreen(new GuiScreenInfo(
-                            "Updated all mods." + (failed.IsEmpty ? "" : "\r\nThese mods failed the update: " + String.Join(", ", failed)),
-                            () => {
-                                EMTK.sm.LoadScreen(gsm);
-                                AccessTools.Method(typeof(GuiScreenMods), "OnReloadMods").Invoke(gsm, null);
-                            },
-                            EMTK.sm, gsm
-                        ));
-                    }), EMTK.sm, gsm, false
-                }
-            ));
 
             return true;
         }
@@ -238,13 +190,10 @@ namespace EMTK {
                 .Select(mod => {
                     return mod.Key + "@" + mod.Value.Info.Version.ToString();
                 }));
-            Console.WriteLine(obj);
         }
-        public static void pasteModProfile(bool obj) {
-            Console.WriteLine(obj);
-        }
+        public static void pasteModProfile(bool obj) {}
+        
         public static void renameModProfile(bool obj) {
-            Console.WriteLine(obj);
             EMTK.sm.LoadScreen(new GuiScreenEntry(
                 activeProfile, new Action<bool, string>(renameFinished), EMTK.sm, gsm
             ));

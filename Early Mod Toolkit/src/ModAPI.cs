@@ -7,9 +7,13 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+
 using HarmonyLib;
+
 using Newtonsoft.Json;
+
 using ProperVersion;
+
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -24,7 +28,7 @@ namespace EMTK {
 
         public static volatile bool modsQueryFinished = false;
         public static Dictionary<string, APIModSummary> modListSummary = new Dictionary<string, APIModSummary>();
-        public static List<OnlineModCell> modCells = new List<OnlineModCell>();
+        public static List<CustomModCellEntry> modCells = new List<CustomModCellEntry>();
 
         public static APIStatusModList modListCache;
         public static Dictionary<string, APIStatusModInfo> modInfoCache = new Dictionary<string, APIStatusModInfo>();
@@ -32,88 +36,102 @@ namespace EMTK {
         public static Dictionary<string, SemVer> latestVersionCache = new Dictionary<string, SemVer>();
         public static Dictionary<string, APIModRelease> latestReleaseCache = new Dictionary<string, APIModRelease>();
 
-        public static List<string> GetUpdates(List<ModContainer> mods) {
-            List<string> queryMods = new List<string>();
-            foreach (ModContainer mod in mods) {
-                string modid = mod.Info.ModID;
-                string ver = mod.Info.Version;
+        public static bool hasInternet = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
-                if (latestReleaseCache.ContainsKey(modid)) continue;
-                if (latestVersionCache.ContainsKey(modid) && SemVer.Parse(ver) >= latestVersionCache[modid]) continue;
+        public static Stream MakeRequest(string url, int tries = 3) {
+            if (!hasInternet) throw new WebException("No internet");
 
-                queryMods.Add(modid + "@" + ver);
-            }
-
-            // Query the api for all updates
-            string joined = String.Join(",", queryMods);
-            while (joined.Length > 1900) {
-                int s = joined.LastIndexOf(',', 1900);
-                MakeUpdatesQuery(joined.Substring(0, s));
-                joined = joined.Substring(s+1);
-            }
-            MakeUpdatesQuery(joined);
-
-            List<string> modUpdates = new List<string>();
-
-            // Any mods that did not come back are up to date. Cache this information too
-            foreach (ModContainer mod in mods) {
-                string modid = mod.Info.ModID;
-                if (latestVersionCache.ContainsKey(modid)) {
-                    if (latestVersionCache[modid] > SemVer.Parse(mod.Info.Version)) modUpdates.Add(modid);
-                } else {
-                    latestVersionCache[modid] = SemVer.Parse(mod.Info.Version);
+            int trial = tries;
+            while (trial-- > 0) {
+                try {
+                    WebRequest request = WebRequest.Create(url);
+                    WebResponse response = request.GetResponse();
+                    return response.GetResponseStream();
+                } catch (Exception ex) {
+                    if (trial <= 0) throw ex;
                 }
             }
-
-            // Return the out of date mods
-            return modUpdates;
+            
+            throw new NotImplementedException("MakeRequest() did not throw an error on failure");
         }
 
-        private static void MakeUpdatesQuery(string mods) {
-            string query = "https://mods.vintagestory.at/api/updates?mods=" + mods;
-
+        public static List<string> GetUpdates(List<ModContainer> mods) {
             try {
-                WebRequest request = WebRequest.Create(query);
-                WebResponse response = request.GetResponse();
+                List<string> queryMods = new List<string>();
+                foreach (ModContainer mod in mods) {
+                    string modid = mod.Info.ModID.ToLower();
+                    string ver = mod.Info.Version;
 
-                using (var reader = new StreamReader(response.GetResponseStream())) {
-                    APIStatusUpdates updates = JsonConvert.DeserializeObject<APIStatusUpdates>(reader.ReadToEnd());
-                    if (modListCache.statuscode != "200") {
-                        ScreenManager.Platform.Logger.Warning("EMTK: API request to get mod updates failed with code {0}", modListCache.statuscode);
-                    }
-                    if (updates.updates != null) {
-                        foreach (KeyValuePair<string, APIModRelease> mr in updates.updates) {
-                            latestVersionCache[mr.Key] = SemVer.Parse(mr.Value.modversion);
-                            latestReleaseCache[mr.Key] = mr.Value;
-                        }
+                    if (latestReleaseCache.ContainsKey(modid)) continue;
+                    if (latestVersionCache.ContainsKey(modid) && SemVer.Parse(ver) >= latestVersionCache[modid]) continue;
+
+                    queryMods.Add(modid + "@" + ver);
+                }
+
+                // Query the api for all updates
+                string joined = String.Join(",", queryMods);
+                while (joined.Length > 1900) {
+                    int s = joined.LastIndexOf(',', 1900);
+                    MakeUpdatesQuery(joined.Substring(0, s));
+                    joined = joined.Substring(s+1);
+                }
+                if (joined.Length > 0) MakeUpdatesQuery(joined);
+
+                List<string> modUpdates = new List<string>();
+
+                // Any mods that did not come back are up to date. Cache this information too
+                foreach (ModContainer mod in mods) {
+                    string modid = mod.Info.ModID.ToLower();
+                    if (latestVersionCache.ContainsKey(modid)) {
+                        if (latestVersionCache[modid] > SemVer.Parse(mod.Info.Version)) modUpdates.Add(modid);
+                    } else {
+                        latestVersionCache[modid] = SemVer.Parse(mod.Info.Version);
                     }
                 }
+
+                // Return the out of date mods
+                return modUpdates;
             } catch (Exception ex) {
                 ScreenManager.Platform.Logger.Error("EMTK: API request to get mod updates failed with error: {0}", ex);
+                return null;
             }
         }
 
-        public static APIStatusModList GetMods() {
+        private static void MakeUpdatesQuery(string mods, int tries = 3) {
+            string query = "https://mods.vintagestory.at/api/updates?mods=" + mods;
+
+            using (var reader = new StreamReader(MakeRequest(query, tries))) {
+                APIStatusUpdates updates = JsonConvert.DeserializeObject<APIStatusUpdates>(reader.ReadToEnd());
+                if (modListCache.statuscode != "200") {
+                    ScreenManager.Platform.Logger.Warning("EMTK: API request to get mod updates failed with code {0}", modListCache.statuscode);
+                }
+                if (updates.updates != null) {
+                    foreach (KeyValuePair<string, APIModRelease> mr in updates.updates) {
+                        latestVersionCache[mr.Key] = SemVer.Parse(mr.Value.modversion);
+                        latestReleaseCache[mr.Key] = mr.Value;
+                    }
+                }
+            }
+        }
+
+        public static APIStatusModList GetMods(int tries = 3) {
             if (modListCache != null) {
                 string code = modListCache.statuscode;
                 if (code == "200") return modListCache;
             }
 
             try {
-                WebRequest request = WebRequest.Create("https://mods.vintagestory.at/api/mods");
-                WebResponse response = request.GetResponse();
-
                 var medFont = CairoFont.WhiteSmallishText();
                 var smallFont = CairoFont.WhiteSmallText();
 
-                using (var reader = new StreamReader(response.GetResponseStream())) {
+                using (var reader = new StreamReader(MakeRequest("https://mods.vintagestory.at/api/mods", tries))) {
                     modListCache = JsonConvert.DeserializeObject<APIStatusModList>(reader.ReadToEnd());
                     if (modListCache.statuscode == "200") {
                         foreach (APIModSummary summary in modListCache.mods) {
-                            if (summary?.modidstrs?.Length != 1 || summary?.type != "mod") continue;
+                            if (summary?.modidstrs?.Length < 1 || summary?.type != "mod") continue;
 
                             string modid = summary.modidstrs[0].ToLower();
-                            modCells.Add(new OnlineModCell() {
+                            modCells.Add(new CustomModCellEntry() {
                                 ModID = modid,
                                 Keywords = String.Join(" ", modid, summary.name, summary.author, summary.tags).ToLower(),
                                 Summary = summary,
@@ -143,17 +161,14 @@ namespace EMTK {
             }
         }
 
-        public static APIStatusModInfo GetMod(string modid) {
+        public static APIStatusModInfo GetMod(string modid, int tries = 3) {
             if (modInfoCache.ContainsKey(modid)) {
                 string code = modInfoCache[modid].statuscode;
                 if (code == "200" || code == "404") return modInfoCache[modid];
             }
 
             try {
-                WebRequest request = WebRequest.Create("https://mods.vintagestory.at/api/mod/" + modid);
-                WebResponse response = request.GetResponse();
-
-                using (var reader = new StreamReader(response.GetResponseStream())) {
+                using (var reader = new StreamReader(MakeRequest("https://mods.vintagestory.at/api/mod/" + modid, tries))) {
                     var mod = JsonConvert.DeserializeObject<APIStatusModInfo>(reader.ReadToEnd());
                     if (mod.statuscode != "200" && mod.statuscode != "404") {
                         ScreenManager.Platform.Logger.Warning("EMTK: API request to get mod info of \"{0}\" failed with code {1}", modid, mod.statuscode);
@@ -167,7 +182,38 @@ namespace EMTK {
             }
         }
 
-        public static BitmapExternal GetImage(string url) {
+        public static void CheckEMTKUpdate() {
+            try {
+                using (var reader = new StreamReader(MakeRequest("https://mods.vintagestory.at/emtk"))) {
+                    string l;
+                    while ((l = reader.ReadLine()) != null) {
+                        // Could be done with regex I guess, but this is easier
+                        int i = l.IndexOf("class=\"downloadbutton\"");
+                        if (i < 0) continue;
+                        
+                        i = l.IndexOf(">");
+                        if (i < 0) continue;
+                        int e = l.IndexOf("<", i);
+                        if (e < 0) continue;
+
+                        string name = l.Substring(i, e-i);
+
+                        i = name.IndexOf("-");
+                        e = name.LastIndexOf(".");
+                        if (i < 0 || e < 0) continue;
+
+                        SemVer ver = SemVer.Parse(name.Substring(i, e-i));
+                        if (ver <= SemVer.Parse(EMTK.version)) return;
+
+                        EMTK.updateAvailable = true;
+                    }
+                }
+            } catch (Exception ex) {
+                ScreenManager.Platform.Logger.Error("EMTK: Update check failed with error: {0}", ex);
+            }
+        }
+
+        public static BitmapExternal GetImage(string url, int tries = 3) {
             string uuid;
             using (SHA256 sha = SHA256.Create()) {
                 uuid = new Guid(sha.ComputeHash(Encoding.Default.GetBytes(url)).Take(16).ToArray()).ToString();
@@ -178,15 +224,13 @@ namespace EMTK {
                 if (!Directory.Exists(ImageCacheDir)) Directory.CreateDirectory(ImageCacheDir);
 
                 try {
-                    WebRequest request = WebRequest.Create(url);
-                    WebResponse response = request.GetResponse();
-
                     using (MemoryStream ms = new MemoryStream()) {
-                        response.GetResponseStream().CopyTo(ms);
+                        MakeRequest(url, tries).CopyTo(ms);
                         File.WriteAllBytes(loc, ms.ToArray());
                     }
                 } catch (Exception ex) {
                     ScreenManager.Platform.Logger.Error("EMTK: Image request for \"{0}\" failed with error: {1}", url, ex);
+                    if (File.Exists(loc)) File.Delete(loc);
                     return null;
                 }
             }
@@ -194,7 +238,7 @@ namespace EMTK {
             return new BitmapExternal(loc);
         }
 
-        public static string GetAsset(string url, int tries = 1) {
+        public static string GetAsset(string url, int tries = 3) {
             string uuid;
             using (SHA256 sha = SHA256.Create()) {
                 uuid = new Guid(sha.ComputeHash(Encoding.Default.GetBytes(url)).Take(16).ToArray()).ToString();
@@ -204,25 +248,15 @@ namespace EMTK {
             if (!File.Exists(loc)) {
                 if (!Directory.Exists(AssetsCacheDir)) Directory.CreateDirectory(AssetsCacheDir);
 
-                int trial = tries;
-                while (trial-- > 0) {
-                    try {
-                        WebRequest request = WebRequest.Create(url);
-                        WebResponse response = request.GetResponse();
-
-                        using (MemoryStream ms = new MemoryStream()) {
-                            response.GetResponseStream().CopyTo(ms);
-                            File.WriteAllBytes(loc, ms.ToArray());
-                        }
-
-                        break;
-                    } catch (Exception ex) {
-                        ScreenManager.Platform.Logger.Error("EMTK: Asset request for \"{0}\" failed with error: {1}", url, ex);
-                        if (trial <= 0) {
-                            if (File.Exists(loc)) File.Delete(loc);
-                            return null;
-                        }
+                try {
+                    using (MemoryStream ms = new MemoryStream()) {
+                        MakeRequest(url, tries).CopyTo(ms);
+                        File.WriteAllBytes(loc, ms.ToArray());
                     }
+                } catch (Exception ex) {
+                    ScreenManager.Platform.Logger.Error("EMTK: Asset request for \"{0}\" failed with error: {1}", url, ex);
+                    if (File.Exists(loc)) File.Delete(loc);
+                    return null;
                 }
                 
             }
@@ -267,7 +301,7 @@ namespace EMTK {
         }
     }
 
-    public class OnlineModCell : ModCellEntry {
+    public class CustomModCellEntry : ModCellEntry {
         public static readonly DirectoryInfo TEMP_DIR = new DirectoryInfo(GamePaths.DataPathMods);
         public static readonly MethodInfo modInfoSet = AccessTools.PropertySetter(typeof(ModContainer), "Info");
 
@@ -275,7 +309,7 @@ namespace EMTK {
         public string Keywords;
         public APIModSummary Summary;
 
-        public OnlineModCell() {
+        public CustomModCellEntry() {
             this.Mod = new ModContainer(TEMP_DIR, ScreenManager.Platform.Logger, false);
             modInfoSet.Invoke(this.Mod, new[] {new ModInfo()});
         }

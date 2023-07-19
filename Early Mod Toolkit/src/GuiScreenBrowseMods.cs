@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+
 using HarmonyLib;
+
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -26,8 +28,8 @@ namespace EMTK {
             "Most Trending",
             "Alphabetical",
         };
-        public static readonly Dictionary<string, Func<IEnumerable<OnlineModCell>, IEnumerable<OnlineModCell>>> filters = 
-            new Dictionary<string, Func<IEnumerable<OnlineModCell>, IEnumerable<OnlineModCell>>>() {
+        public static readonly Dictionary<string, Func<IEnumerable<CustomModCellEntry>, IEnumerable<CustomModCellEntry>>> filters = 
+            new Dictionary<string, Func<IEnumerable<CustomModCellEntry>, IEnumerable<CustomModCellEntry>>>() {
                 {"Recently Updated", mx => mx.OrderByDescending(m => m.Summary.lastreleased)},
                 {"Most Downloads", mx => mx.OrderByDescending(m => m.Summary.downloads)},
                 {"Most Follows", mx => mx.OrderByDescending(m => m.Summary.follows)},
@@ -40,7 +42,7 @@ namespace EMTK {
         public ElementBounds clippingBounds;
         public ElementBounds listBounds;
 
-        public List<OnlineModCell> modCells;
+        public List<CustomModCellEntry> modCells;
         public string query = "";
         public string sortingMethod = "Recently Updated";
         public string side = "any";
@@ -65,7 +67,7 @@ namespace EMTK {
             this.ElementComposer = base.dialogBase("mainmenu-browsemods", -1.0, -1.0)
                 .AddTextInput(
                     ElementBounds.Fixed(10.0, 5.0, box.Width-15.0, 30.0),
-                    s => {this.query = s.ToLower(); ReloadCells();},
+                    s => {this.query = s.ToLower().Trim(); ReloadCells();},
                     CairoFont.WhiteSmallishText(), "querytext"
                 )
                 .AddDropDown(
@@ -87,7 +89,7 @@ namespace EMTK {
                 .AddVerticalScrollbar(
                     (v) => {
                         scrollLoc = (float)handlepos.GetValue(this.ElementComposer.GetScrollbar("scrollbar"));
-                        ElementBounds bounds = this.ElementComposer.GetCellList<OnlineModCell>("modsbrowselist").Bounds;
+                        ElementBounds bounds = this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").Bounds;
                         bounds.fixedY = -v;
                         bounds.CalcWorldBounds();
                     },
@@ -95,7 +97,7 @@ namespace EMTK {
                 .BeginClip(clippingBounds = ElementBounds.Fixed(20.0, 90.0, box.Width-60.0, box.Height-145.0))
                     .AddCellList(
                         listBounds = clippingBounds.ForkContainingChild(0.0, 0.0, 0.0, 0.0).WithFixedPadding(0.0, 10.0),
-                        new OnRequireCell<OnlineModCell>(this.createCellElem),
+                        new OnRequireCell<CustomModCellEntry>(this.createCellElem),
                         this.LoadModCells(),
                         "modsbrowselist"
                     )
@@ -125,15 +127,11 @@ namespace EMTK {
             }
         }
 
-        public void ChangeSortingMethod(string code, bool selected) {
-            throw new NotImplementedException();
-        }
-
-        public List<OnlineModCell> LoadModCells() {
+        public List<CustomModCellEntry> LoadModCells() {
             while (!ModAPI.modsQueryFinished) Thread.Sleep(100);
 
             // Sort by sorting methods
-            IEnumerable<OnlineModCell> cells = ModAPI.modCells;
+            IEnumerable<CustomModCellEntry> cells = ModAPI.modCells;
             if (filters.ContainsKey(sortingMethod)) {
                 cells = filters[sortingMethod](cells);
             }
@@ -143,25 +141,36 @@ namespace EMTK {
             // Sort by side
             if (side != "any") cells = cells.Where(m => m.Summary.side == side);
 
-            // Sort by query
-            string[] words = query.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-
-            if (words.Length == 0) {
+            // Sort by queries
+            if (query.Length == 0) {
                 modCells = cells.ToList();
                 return modCells;
             }
 
+            string[][] wordSets = query.Split(
+                new[] {"|"}, StringSplitOptions.RemoveEmptyEntries
+            ).Select(s => s.Split(
+                new char[] {' '}, StringSplitOptions.RemoveEmptyEntries
+            )).ToArray();
+
             modCells = cells.Where(m => {
                 string keywords = m.Keywords;
-                foreach (string word in words) {
-                    if (!keywords.Contains(word)) return false;
+                foreach (string[] wordSet in wordSets) {
+                    bool wordSetMatch = true;
+                    foreach (string word in wordSet) {
+                        if (!keywords.Contains(word)) {
+                            wordSetMatch = false;
+                            break;
+                        } 
+                    }
+                    if (wordSetMatch) return true;
                 }
-                return true;
+                return false;
             }).ToList();
             return modCells;
 		}
 
-        public IGuiElementCell createCellElem(OnlineModCell cell, ElementBounds bounds) {
+        public IGuiElementCell createCellElem(CustomModCellEntry cell, ElementBounds bounds) {
 			return new GuiElementModCell(this.ScreenManager.api, cell, bounds) {
                 On = EMTK.loadedMods.ContainsKey(cell.ModID),
 				OnMouseDownOnCellLeft = new Action<int>(this.OnClickCellLeft),
@@ -170,10 +179,10 @@ namespace EMTK {
 		}
 
         public void ReloadCells() {
-            List<OnlineModCell> cells = this.LoadModCells();
+            List<CustomModCellEntry> cells = this.LoadModCells();
 
-            GuiElementCellList<OnlineModCell> cellList = this.ElementComposer.GetCellList<OnlineModCell>("modsbrowselist");
-            this.ElementComposer.GetCellList<OnlineModCell>("modsbrowselist").ReloadCells(cells);
+            GuiElementCellList<CustomModCellEntry> cellList = this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist");
+            this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").ReloadCells(cells);
 
             ElementBounds bounds = cellList.Bounds;
             bounds.CalcWorldBounds();
@@ -199,10 +208,10 @@ namespace EMTK {
 		}
 
         public void OnClickCellRight(int cellIndex) {
-            GuiElementCellList<OnlineModCell> cellList = this.ElementComposer.GetCellList<OnlineModCell>("modsbrowselist");
+            GuiElementCellList<CustomModCellEntry> cellList = this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist");
             GuiElementModCell guiCell = (GuiElementModCell)cellList.elementCells[cellIndex];
 
-            string modid = ((OnlineModCell)guiCell.cell).ModID;
+            string modid = ((CustomModCellEntry)guiCell.cell).ModID.ToLower();
 
             if (guiCell.On) {
                 ModContainer mod = EMTK.loadedMods[modid];

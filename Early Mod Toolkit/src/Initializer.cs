@@ -1,11 +1,11 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+
+using HarmonyLib;
 
 using Vintagestory.API.Config;
 using Vintagestory.Client;
@@ -33,6 +33,7 @@ namespace EMTK {
 
         [STAThread]
         public static void Main(string[] rawArgs) {
+
             if (RuntimeEnv.OS == OS.Windows) {
                 typeof(ClientProgram).GetMethod("LoadNativeLibrariesWindows", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
 			}
@@ -40,6 +41,7 @@ namespace EMTK {
             typeof(ClientProgram).GetField("rawArgs", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, rawArgs);
 
             Console.WriteLine("EMTK: Pre-Querying ModDB in a separate thread!");
+            var checker = new Thread(ModAPI.CheckEMTKUpdate);
             new Thread(() => {ModAPI.GetMods();}).Start();
 			
             Console.WriteLine("EMTK: Patching for early mods!");
@@ -63,6 +65,10 @@ namespace EMTK {
             
             #endregion
             Console.WriteLine("EMTK: Patching complete!");
+
+            Console.WriteLine("EMTK: Awaiting EMTK update checker...");
+            checker.Start();
+            checker.Join();
 			
 			new ClientProgram(rawArgs);
 

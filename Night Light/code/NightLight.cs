@@ -63,7 +63,7 @@ namespace NightLight {
         }
         
         public override void Dispose() {
-            harmony.UnpatchAll();
+            harmony.UnpatchAll("nightlight");
             base.Dispose();
         }
 
