@@ -90,7 +90,9 @@ namespace EMTK {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ModLoader), "TryRunModPhase")]
         public static bool TryRunModPhase(Mod mod, ModSystem system, ICoreAPI api, ModRunPhase phase, ref bool __result) {
-            if (mod?.Info?.Authors[0] == "Tyron") return true;
+            if (mod?.Info?.Authors?.Count != null && mod.Info.Authors.Count > 0) {
+                if (mod.Info.Authors[0] == "Tyron") return true;
+            }
 
             try {
                 MethodInfo m = null;

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Linq;
 using ProperVersion;
 
 using Vintagestory.API.Client;
@@ -60,10 +60,10 @@ namespace EMTK {
                 List<string> queryMods = new List<string>();
                 foreach (ModContainer mod in mods) {
                     string modid = mod.Info.ModID.ToLower();
-                    string ver = mod.Info.Version;
+                    string ver = mod?.Info?.Version;
 
                     if (latestReleaseCache.ContainsKey(modid)) continue;
-                    if (latestVersionCache.ContainsKey(modid) && SemVer.Parse(ver) >= latestVersionCache[modid]) continue;
+                    if (latestVersionCache.ContainsKey(modid) && EMTK.ParseVersion(modid, ver) >= latestVersionCache[modid]) continue;
 
                     queryMods.Add(modid + "@" + ver);
                 }
@@ -83,9 +83,9 @@ namespace EMTK {
                 foreach (ModContainer mod in mods) {
                     string modid = mod.Info.ModID.ToLower();
                     if (latestVersionCache.ContainsKey(modid)) {
-                        if (latestVersionCache[modid] > SemVer.Parse(mod.Info.Version)) modUpdates.Add(modid);
+                        if (latestVersionCache[modid] > EMTK.ParseVersion(modid, mod.Info.Version)) modUpdates.Add(modid);
                     } else {
-                        latestVersionCache[modid] = SemVer.Parse(mod.Info.Version);
+                        latestVersionCache[modid] = EMTK.ParseVersion(modid, mod.Info.Version);
                     }
                 }
 
@@ -105,8 +105,8 @@ namespace EMTK {
                 if (modListCache.statuscode != "200") {
                     ScreenManager.Platform.Logger.Warning("EMTK: API request to get mod updates failed with code {0}", modListCache.statuscode);
                 }
-                if (updates.updates != null) {
-                    foreach (KeyValuePair<string, APIModRelease> mr in updates.updates) {
+                if (updates.Updates != null) {
+                    foreach (KeyValuePair<string, APIModRelease> mr in updates.Updates) {
                         latestVersionCache[mr.Key] = SemVer.Parse(mr.Value.modversion);
                         latestReleaseCache[mr.Key] = mr.Value;
                     }
@@ -372,7 +372,20 @@ namespace EMTK {
 
     public class APIStatusUpdates {
         public int statuscode;
-        public Dictionary<string, APIModRelease> updates;
+        public JToken updates;
+
+        Dictionary<string, APIModRelease> updatesCache;
+
+        public Dictionary<string, APIModRelease> Updates {
+            get {
+                if (updatesCache == null) {
+                    updatesCache = updates.Type == JTokenType.Object
+                        ? updates.ToObject<Dictionary<string, APIModRelease>>()
+                        : new();
+                }
+                return updatesCache;
+            }
+        }
     }
 
     public class APIModRelease {

@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading;
 
 using HarmonyLib;
-
+using ProperVersion;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -59,6 +59,15 @@ namespace EMTK {
             get {
                 return EMTKConfig.Instance;
             }
+        }
+
+        public static SemVer ParseVersion(string modid, string ver) {
+            SemVer version;
+            string error = null;
+            if (!SemVer.TryParse(ver, out version, out error) || error != null) {
+                ScreenManager.Platform.Logger.Warning("Dependency '{0}': {1} (best guess: {2})", modid, error, version);
+            }
+            return version;
         }
 
         public static void EarlyLoadMods(bool reload = true) {

@@ -252,7 +252,7 @@ namespace EMTK {
         public static void addNewline(ICoreClientAPI capi, ref List<RichTextComponentBase> elems, CairoFont font) {
             if (ignoreNewlines > 0) {
                 ignoreNewlines--;
-            } else if (!(elems[elems.Count-1] is RichTextComponent && ((RichTextComponent)elems[elems.Count-1]).DisplayText.EndsWith("\r\n"))) {
+            } else if (elems.Count > 0 && !(elems[elems.Count-1] is RichTextComponent && ((RichTextComponent)elems[elems.Count-1]).DisplayText.EndsWith("\r\n"))) {
                 elems.Add(new RichTextComponent(capi, "\r\n", font));
             }
         }

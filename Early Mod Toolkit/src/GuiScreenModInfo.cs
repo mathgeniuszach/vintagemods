@@ -111,9 +111,7 @@ namespace EMTK {
             APIModInfo mod = smod.mod;
             APIModRelease latestRelease = mod != null && mod.releases != null && mod.releases.Length > 0 ? mod.releases[0] : null;
             bool outOfDate = false;
-            try {
-                outOfDate = lmod != null && mod != null && latestRelease != null && SemVer.Parse(latestRelease.modversion) > SemVer.Parse(lmod.Info.Version);
-            } catch {}
+            outOfDate = lmod != null && mod != null && latestRelease != null && EMTK.ParseVersion(modid, latestRelease.modversion) > EMTK.ParseVersion(modid, lmod.Info.Version);
 
             Size2d box = ElementBoundsPlus.GetBoxSize();
 
@@ -219,9 +217,16 @@ namespace EMTK {
             h = Math.Max(h, 20.0 + iconSize.Height);
 
             PatchVTML.cleanText = true;
-            PatchVTML.tableWidth = (int)((box.Width - 70.0) / 12.0); // This calculation needs to be done everywhere, not just here
+            PatchVTML.tableWidth = (int)((box.Width - 70.0) / 12.0); // FIXME: This calculation needs to be done everywhere, not just here
+            try {
+                this.ElementComposer.AddRichtext(desc, smallFont, ElementBounds.Fixed(0.0, h, box.Width - 70.0, box.Height - h), "description");
+            } catch (Exception ex) {
+                ScreenManager.Platform.Logger.Error("Failure to display mod description of '{0}': {1}", modid, ex);
+                this.ElementComposer.AddRichtext(
+                    "There was a problem displaying the description from this mod. Report your log on <a href='https://discord.gg/pBFqEcXvW5'>Discord</a>!",
+                    smallFont, ElementBounds.Fixed(0.0, h, box.Width - 70.0, box.Height - h), "description");
+            }
             this.ElementComposer
-                .AddRichtext(desc, smallFont, ElementBounds.Fixed(0.0, h, box.Width - 70.0, box.Height - h), "description")
                 .EndClip().EndChildElements()
                 .AddButton(
                     Lang.Get("Back"), () => {EMTK.sm.LoadScreen(parentScreen); return true;},
