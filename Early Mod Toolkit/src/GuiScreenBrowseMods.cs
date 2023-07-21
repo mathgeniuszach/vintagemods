@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-
+using System.Threading.Tasks;
 using HarmonyLib;
 
 using Vintagestory.API.Client;
@@ -42,7 +42,7 @@ namespace EMTK {
         public ElementBounds clippingBounds;
         public ElementBounds listBounds;
 
-        public List<CustomModCellEntry> modCells;
+        public List<CustomModCellEntry> modCells = new List<CustomModCellEntry>();
         public string query = "";
         public string sortingMethod = "Recently Updated";
         public string side = "any";
@@ -67,22 +67,22 @@ namespace EMTK {
             this.ElementComposer = base.dialogBase("mainmenu-browsemods", -1.0, -1.0)
                 .AddTextInput(
                     ElementBounds.Fixed(10.0, 5.0, box.Width-15.0, 30.0),
-                    s => {this.query = s.ToLower().Trim(); ReloadCells();},
+                    s => {this.query = s.ToLower().Trim(); QueueReloadCells();},
                     CairoFont.WhiteSmallishText(), "querytext"
                 )
                 .AddDropDown(
                     sortingMethods, sortingMethods, 0,
-                    (c, s) => {this.sortingMethod = c; ReloadCells();},
+                    (c, s) => {this.sortingMethod = c; QueueReloadCells();},
                     ElementBounds.Fixed(10.0, 45.0, 170.0, 30.0), "querysortmethod"
                 )
                 .AddDropDown(
                     new[] {"default", "reversed"}, new[] {"Descending", "Ascending"}, 0,
-                    (c, s) => {ascending = c == "reversed"; ReloadCells();},
+                    (c, s) => {ascending = c == "reversed"; QueueReloadCells();},
                     ElementBounds.Fixed(200.0, 46.0, 130.0, 31.0), "querysortreversed"
                 )
                 .AddDropDown(
                     new[] {"any", "client", "server", "both"}, new[] {"Any-sided", "Client-only", "Server-only", "Both-sided"}, 0,
-                    (c, s) => {side = c; ReloadCells();},
+                    (c, s) => {side = c; QueueReloadCells();},
                     ElementBounds.Fixed(350.0, 46.0, 130.0, 32.0), "queryside"
                 )
                 .AddInset(ElementBounds.Fixed(10.0, 90.0, box.Width-40.0, box.Height-145.5))
@@ -98,7 +98,7 @@ namespace EMTK {
                     .AddCellList(
                         listBounds = clippingBounds.ForkContainingChild(0.0, 0.0, 0.0, 0.0).WithFixedPadding(0.0, 10.0),
                         new OnRequireCell<CustomModCellEntry>(this.createCellElem),
-                        this.LoadModCells(),
+                        null,
                         "modsbrowselist"
                     )
                 .EndClip()
@@ -107,6 +107,8 @@ namespace EMTK {
                     ElementBounds.Fixed(EnumDialogArea.RightBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                 )
                 .Compose();
+            
+            QueueReloadCells();
             
             this.listBounds.CalcWorldBounds();
             this.clippingBounds.CalcWorldBounds();
@@ -178,11 +180,34 @@ namespace EMTK {
 			};
 		}
 
-        public void ReloadCells() {
-            List<CustomModCellEntry> cells = this.LoadModCells();
+        object reloadLock = new object();
+        object varLock = new object();
+        int queuedReloads = 0;
 
+        public void QueueReloadCells() {
+            modCells = new List<CustomModCellEntry>();
+            ReloadCells();
+
+            lock (varLock) {
+                if (queuedReloads > 1) return;
+                queuedReloads++;
+            }
+
+            new Thread(() => {
+                lock (reloadLock) {
+                    this.LoadModCells();
+                    lock (varLock) {
+                        queuedReloads--;
+                    }
+
+                    ScreenManager.EnqueueMainThreadTask(new Action(ReloadCells));
+                }
+            }).Start();
+        }
+
+        public void ReloadCells() {
             GuiElementCellList<CustomModCellEntry> cellList = this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist");
-            this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").ReloadCells(cells);
+            this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").ReloadCells(modCells);
 
             ElementBounds bounds = cellList.Bounds;
             bounds.CalcWorldBounds();

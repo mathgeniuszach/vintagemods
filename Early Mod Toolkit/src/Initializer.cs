@@ -33,7 +33,6 @@ namespace EMTK {
 
         [STAThread]
         public static void Main(string[] rawArgs) {
-
             if (RuntimeEnv.OS == OS.Windows) {
                 typeof(ClientProgram).GetMethod("LoadNativeLibrariesWindows", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
 			}
@@ -55,6 +54,12 @@ namespace EMTK {
             typeof(GamePaths).GetProperty("AssetsPath").GetSetMethod(true).Invoke(null, new[] {
                 Path.Combine(basepath, "assets")
             });
+            if (!Directory.Exists(GamePaths.AssetsPath)) {
+                string error = "Error; \"assets\" folder not found! Make sure the executable is in the same folder as the \"assets\" folder and Vintagestory.exe, or install Vintagestory to %appdata%/Vintagestory on Windows or /usr/share/vintagestory on Linux.";
+                Console.WriteLine(error);
+                File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ERROR.txt"), error);
+            }
+
             GamePaths.DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VintagestoryData");
             modProfilePath = Path.Combine(GamePaths.DataPath, "ModProfiles");
             activeModProfilePath = Path.Combine(modProfilePath, "ActiveProfile");
@@ -81,7 +86,7 @@ namespace EMTK {
                 string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 string vsdir = Path.DirectorySeparatorChar == '\\' ? Path.Combine(appdata, "Vintagestory/") : "/usr/share/vintagestory/";
 
-                if (basedir == vsdir) {
+                if (File.Exists(Path.Combine(basedir, "Vintagestory.exe"))) {
                     ASSEMBLY_PATHS = new[] {
                         basedir,
                         Path.Combine(basedir, "Lib"),
