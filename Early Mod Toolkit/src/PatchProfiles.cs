@@ -249,13 +249,13 @@ namespace EMTK {
             if (!confirmed) return;
 
             // Delete profile
-            Directory.Delete(GamePaths.DataPathMods, true);
+            DeleteDirectoryContents(GamePaths.DataPathMods);
             ClientSettings.DisabledMods.Clear();
 
             if (profiles.Count > 1) {
                 // Swap to an existing profile if possible
                 var code = profiles[0] == activeProfile ? profiles[1] : profiles[0];
-                Directory.Move(Path.Combine(Initializer.modProfilePath, code), GamePaths.DataPathMods);
+                MoveDirectoryContents(Path.Combine(Initializer.modProfilePath, code), GamePaths.DataPathMods);
                 File.WriteAllText(Initializer.activeModProfilePath, code);
                 if (File.Exists(Path.Combine(GamePaths.DataPathMods, "Disabled"))) {
                     ClientSettings.DisabledMods.AddRange(File.ReadAllLines(Path.Combine(GamePaths.DataPathMods, "Disabled")));
@@ -278,14 +278,24 @@ namespace EMTK {
             if (code == activeProfile) return;
 
             // Hotswap mod folder
-            Directory.Move(GamePaths.DataPathMods, Path.Combine(Initializer.modProfilePath, activeProfile));
-            Directory.Move(Path.Combine(Initializer.modProfilePath, code), GamePaths.DataPathMods);
+            if (!Directory.Exists(GamePaths.DataPathMods)) Directory.CreateDirectory(GamePaths.DataPathMods);
+
+            string activeProfilePath = Path.Combine(Initializer.modProfilePath, activeProfile);
+            string newProfilePath = Path.Combine(Initializer.modProfilePath, code);
+            if (Directory.Exists(activeProfilePath)) Directory.Delete(activeProfilePath, true);
+
+            Console.WriteLine("A");
+            MoveDirectoryContents(GamePaths.DataPathMods, activeProfilePath);
+            Console.WriteLine("B");
+            MoveDirectoryContents(newProfilePath, GamePaths.DataPathMods);
+            Directory.Delete(newProfilePath, true);
+            Console.WriteLine("C");
 
             // Change text in the active mod profile file
             File.WriteAllText(Initializer.activeModProfilePath, code);
 
             // Save client disabled mods
-            File.WriteAllLines(Path.Combine(Initializer.modProfilePath, activeProfile, "Disabled"), ClientSettings.DisabledMods);
+            File.WriteAllLines(Path.Combine(activeProfilePath, "Disabled"), ClientSettings.DisabledMods);
 
             // Load client disabled mods
             ClientSettings.DisabledMods.Clear();
@@ -296,6 +306,28 @@ namespace EMTK {
             ClientSettings.Inst.Save(true);
 
             AccessTools.Method(typeof(GuiScreenMods), "OnReloadMods").Invoke(gsm, null);
+        }
+        
+        public static void MoveDirectoryContents(string src, string dst) {
+            if (!Directory.Exists(dst)) Directory.CreateDirectory(dst);
+
+            foreach (string srcEntry in Directory.EnumerateFileSystemEntries(src)) {
+                string dstEntry = Path.Combine(dst, Path.GetFileName(srcEntry));
+                if (Directory.Exists(srcEntry)) {
+                    Directory.Move(srcEntry, dstEntry);
+                } else if (File.Exists(srcEntry)) {
+                    File.Move(srcEntry, dstEntry);
+                }
+            }
+        }
+
+        public static void DeleteDirectoryContents(string src) {
+            foreach (string entry in Directory.EnumerateDirectories(src)) {
+                Directory.Delete(entry, true);
+            }
+            foreach (string entry in Directory.EnumerateFiles(src)) {
+                File.Delete(entry);
+            }
         }
     }
 }
