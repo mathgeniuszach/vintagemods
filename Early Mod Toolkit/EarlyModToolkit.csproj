@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>2.0.4.0</Version>
+    <Version>2.0.6.0</Version>
     
     <TargetFramework>net4.6.1</TargetFramework>
     <LangVersion>9.0</LangVersion>

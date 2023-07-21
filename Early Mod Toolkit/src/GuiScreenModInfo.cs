@@ -153,7 +153,10 @@ namespace EMTK {
                     .AddRichtext("<icon name=wpStar2>", smallFont, ElementBounds.Fixed(EnumDialogArea.RightTop, 0.0, 37.0, 20.0, 20.0));
                 
                 if (mod.releases != null && mod.releases.Length > 0) {
-                    var versions = mod.releases.Select(release => release.modversion).ToArray();
+                    var versions = mod.releases
+                        .Where(release => release?.modversion != null)
+                        .Select(release => release.modversion.Trim())
+                        .ToArray();
 
                     selectedVersion = versions[0];
                     this.ElementComposer

@@ -59,7 +59,8 @@ namespace EMTK {
             try {
                 List<string> queryMods = new List<string>();
                 foreach (ModContainer mod in mods) {
-                    string modid = mod.Info.ModID.ToLower();
+                    string modid = mod?.Info?.ModID?.ToLower();
+                    if (modid == null) continue;
                     string ver = mod?.Info?.Version;
 
                     if (latestReleaseCache.ContainsKey(modid)) continue;
@@ -81,7 +82,8 @@ namespace EMTK {
 
                 // Any mods that did not come back are up to date. Cache this information too
                 foreach (ModContainer mod in mods) {
-                    string modid = mod.Info.ModID.ToLower();
+                    string modid = mod?.Info?.ModID?.ToLower();
+                    if (modid == null) continue;
                     if (latestVersionCache.ContainsKey(modid)) {
                         if (latestVersionCache[modid] > EMTK.ParseVersion(modid, mod.Info.Version)) modUpdates.Add(modid);
                     } else {
@@ -107,7 +109,7 @@ namespace EMTK {
                 }
                 if (updates.Updates != null) {
                     foreach (KeyValuePair<string, APIModRelease> mr in updates.Updates) {
-                        latestVersionCache[mr.Key] = SemVer.Parse(mr.Value.modversion);
+                        latestVersionCache[mr.Key] = SemVer.Parse(mr.Value?.modversion);
                         latestReleaseCache[mr.Key] = mr.Value;
                     }
                 }
