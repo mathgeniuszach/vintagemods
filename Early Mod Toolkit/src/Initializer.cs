@@ -1,14 +1,24 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using System.Threading;
 
 using HarmonyLib;
 
 using Vintagestory.API.Config;
 using Vintagestory.Client;
+
+[assembly: CompilationRelaxations(CompilationRelaxations.NoStringInterning)]
+[assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
+[assembly: Debuggable(DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints)]
+[assembly: ComVisible(false)]
+[assembly: Guid("782e0587-e211-4a27-a5ac-3ecb057860dc")]
+[assembly: SecurityPermission((SecurityAction)8, SkipVerification = true)]
 
 namespace System.Runtime.CompilerServices
 {
