@@ -54,6 +54,7 @@ namespace EMTK {
         [HarmonyPatch(typeof(GuiScreenMods), "OnClickCellLeft")]
         public static bool OnClickCellLeft(GuiScreen __instance, int cellIndex) {
             GuiElementModCell guicell = (GuiElementModCell) __instance.ElementComposer.GetCellList<ModCellEntry>("modstable").elementCells[cellIndex];
+            if (guicell?.cell?.Mod?.Info?.ModID == null) return false;
             EMTK.sm.LoadScreen(new GuiScreenModInfo(
                 guicell.cell.Mod.Info.ModID,
                 guicell.cell.Mod,
