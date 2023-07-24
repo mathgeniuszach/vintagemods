@@ -77,6 +77,11 @@ namespace EMTK {
             #endregion
             Console.WriteLine("EMTK: Patching complete!");
 
+            if (Directory.Exists(Path.Combine(GamePaths.Cache, "trash"))) {
+                Console.WriteLine("EMTK: Trashing pseudo trashed items");
+                Directory.Delete(Path.Combine(GamePaths.Cache, "trash"), true);
+            }
+
             Console.WriteLine("EMTK: Searching ModDB for mods!");
             ModAPI.CheckEMTKUpdate();
             new Thread(() => {ModAPI.GetMods();}).Start();

@@ -55,10 +55,23 @@ namespace EMTK {
         public static List<CachedMod> cachedMods = new List<CachedMod>();
         public static Dictionary<string, ModContainer> loadedMods = new Dictionary<string, ModContainer>();
 
+        public static Random rng = new Random();
+
         public static EMTKConfig Config {
             get {
                 return EMTKConfig.Instance;
             }
+        }
+
+        public static void PseudoDelete(string path) {
+            string trash = Path.Combine(GamePaths.Cache, "trash");
+            if (!Directory.Exists(trash)) Directory.CreateDirectory(trash);
+            
+            byte[] uuidBytes = new byte[16];
+            rng.NextBytes(uuidBytes);
+            string uuid = new Guid(uuidBytes).ToString();
+
+            File.Move(path, Path.Combine(trash, uuid));
         }
 
         public static SemVer ParseVersion(string modid, string ver) {

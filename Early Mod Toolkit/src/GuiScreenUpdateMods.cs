@@ -132,7 +132,13 @@ namespace EMTK {
                             if (Directory.Exists(tuple.Item2.SourcePath)) {
                                 Directory.Delete(tuple.Item2.SourcePath, true);
                             } else {
-                                File.Delete(tuple.Item2.SourcePath);
+                                try {
+                                    File.Delete(tuple.Item2.SourcePath);
+                                } catch (UnauthorizedAccessException) {
+                                    EMTK.PseudoDelete(tuple.Item2.SourcePath);
+                                } catch (IOException) {
+                                    EMTK.PseudoDelete(tuple.Item2.SourcePath);
+                                }
                             }
 
                             // Install new mod

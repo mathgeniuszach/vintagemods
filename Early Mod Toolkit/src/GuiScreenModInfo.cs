@@ -285,7 +285,13 @@ namespace EMTK {
                     if (Directory.Exists(lmod.SourcePath)) {
                         Directory.Delete(lmod.SourcePath, true);
                     } else {
-                        File.Delete(lmod.SourcePath);
+                        try {
+                            File.Delete(lmod.SourcePath);
+                        } catch (UnauthorizedAccessException) {
+                            EMTK.PseudoDelete(lmod.SourcePath);
+                        } catch (IOException) {
+                            EMTK.PseudoDelete(lmod.SourcePath);
+                        }
                     }
                 }
 
@@ -306,10 +312,7 @@ namespace EMTK {
             } catch (Exception ex) {
                 ScreenManager.Platform.Logger.Error("Could not install {0}@{1}: {2}", modid, selectedVersion, ex);
 
-                string message = lmod?.SourcePath?.EndsWith(".dll") == true
-                    ? "Could not install {0}@{1}. Note that Vintage Story has some issues deleting dlls on Windows, which may have occurred here."
-                    : "Could not install {0}@{1}. Check the log for more info.";
-                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
+                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format("Could not install {0}@{1}. Check the log for more info.", modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
             }
             return true;
         }
@@ -319,7 +322,13 @@ namespace EMTK {
                 if (Directory.Exists(lmod.SourcePath)) {
                     Directory.Delete(lmod.SourcePath, true);
                 } else {
-                    File.Delete(lmod.SourcePath);
+                    try {
+                        File.Delete(lmod.SourcePath);
+                    } catch (UnauthorizedAccessException) {
+                        EMTK.PseudoDelete(lmod.SourcePath);
+                    } catch (IOException) {
+                        EMTK.PseudoDelete(lmod.SourcePath);
+                    }
                 }
 
                 EMTK.sm.loadMods();
