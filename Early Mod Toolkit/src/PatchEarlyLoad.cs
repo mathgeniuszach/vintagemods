@@ -74,11 +74,13 @@ namespace EMTK {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ModContainer), "LoadModInfo")]
         public static void LoadModInfo(ModContainer __instance) {
-            if (__instance.Icon == null) {
-                AccessTools.PropertySetter(typeof(ModContainer), "Icon").Invoke(__instance, new[] {
-                    new BitmapExternal(Path.Combine(GamePaths.AssetsPath, "game/textures/gui/3rdpartymodicon.png"))
-                });
-            }
+            try {
+                if (__instance.Icon == null) {
+                    AccessTools.PropertySetter(typeof(ModContainer), "Icon").Invoke(__instance, new[] {
+                        new BitmapExternal(Path.Combine(GamePaths.AssetsPath, "game/textures/gui/3rdpartymodicon.png"))
+                    });
+                }
+            } catch (MissingMethodException) {}
         }
 
         public static Stopwatch timer = new Stopwatch();

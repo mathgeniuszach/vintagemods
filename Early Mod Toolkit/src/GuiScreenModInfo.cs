@@ -279,45 +279,62 @@ namespace EMTK {
             }
             if (cfile == null) return true; // Should never happen, but just in case
 
-            if (lmod != null) {
-                // Remove existing mod
+            try {
+                if (lmod != null) {
+                    // Remove existing mod
+                    if (Directory.Exists(lmod.SourcePath)) {
+                        Directory.Delete(lmod.SourcePath, true);
+                    } else {
+                        File.Delete(lmod.SourcePath);
+                    }
+                }
+
+                // Install new mod
+                File.Move(cfile, Path.Combine(GamePaths.DataPathMods, filename));
+
+                // Reload mods and mod screen
+
+                EMTK.sm.loadMods();
+                EMTK.FullEarlyReloadMods();
+
+                InitMeta(modid, EMTK.loadedMods[modid]);
+
+                if (parentScreen is GuiScreenMods) {
+                    invalidateParentScreen.Invoke(parentScreen, null);
+                }
+                invalidate();
+            } catch (Exception ex) {
+                ScreenManager.Platform.Logger.Error("Could not install {0}@{1}: {2}", modid, selectedVersion, ex);
+
+                string message = lmod?.SourcePath?.EndsWith(".dll") == true
+                    ? "Could not install {0}@{1}. Note that Vintage Story has some issues deleting dlls on Windows, which may have occurred here."
+                    : "Could not install {0}@{1}. Check the log for more info.";
+                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
+            }
+            return true;
+        }
+
+        public bool RemoveMod() {
+            try {
                 if (Directory.Exists(lmod.SourcePath)) {
                     Directory.Delete(lmod.SourcePath, true);
                 } else {
                     File.Delete(lmod.SourcePath);
                 }
-            }
 
-            // Install new mod
-            File.Move(cfile, Path.Combine(GamePaths.DataPathMods, filename));
+                EMTK.sm.loadMods();
+                EMTK.FullEarlyReloadMods();
+                if (parentScreen is GuiScreenMods) {
+                    invalidateParentScreen.Invoke(parentScreen, null);
+                    EMTK.sm.LoadScreen(parentScreen);
+                }
+            } catch (Exception ex) {
+                ScreenManager.Platform.Logger.Error("Could not uninstall {0}: {2}", modid, selectedVersion, ex);
 
-            // Reload mods and mod screen
-
-            EMTK.sm.loadMods();
-            EMTK.FullEarlyReloadMods();
-
-            InitMeta(modid, EMTK.loadedMods[modid]);
-
-            if (parentScreen is GuiScreenMods) {
-                invalidateParentScreen.Invoke(parentScreen, null);
-            }
-            invalidate();
-
-            return true;
-        }
-
-        public bool RemoveMod() {
-            if (Directory.Exists(lmod.SourcePath)) {
-                Directory.Delete(lmod.SourcePath, true);
-            } else {
-                File.Delete(lmod.SourcePath);
-            }
-
-            EMTK.sm.loadMods();
-            EMTK.FullEarlyReloadMods();
-            if (parentScreen is GuiScreenMods) {
-                invalidateParentScreen.Invoke(parentScreen, null);
-                EMTK.sm.LoadScreen(parentScreen);
+                string message = lmod?.SourcePath?.EndsWith(".dll") == true
+                    ? "Could not uninstall {0}. Note that Vintage Story has some issues deleting dlls on Windows, which likely has occurred here."
+                    : "Could not uninstall {0}. Check the log for more info.";
+                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
             }
 
             return true;

@@ -284,12 +284,9 @@ namespace EMTK {
             string newProfilePath = Path.Combine(Initializer.modProfilePath, code);
             if (Directory.Exists(activeProfilePath)) Directory.Delete(activeProfilePath, true);
 
-            Console.WriteLine("A");
             MoveDirectoryContents(GamePaths.DataPathMods, activeProfilePath);
-            Console.WriteLine("B");
             MoveDirectoryContents(newProfilePath, GamePaths.DataPathMods);
             Directory.Delete(newProfilePath, true);
-            Console.WriteLine("C");
 
             // Change text in the active mod profile file
             File.WriteAllText(Initializer.activeModProfilePath, code);
