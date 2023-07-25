@@ -194,6 +194,7 @@ namespace EMTK {
             };
             if (lmod != null) {
                 fields.Add("Type", lmod.Info.Type.ToString());
+                if (lmod?.Info?.Dependencies?.Count != null && lmod.Info.Dependencies.Count > 0) fields.Add("Requires", String.Join(", ", lmod.Info.Dependencies));
             }
             if (mod != null) {
                 fields.Add("Tags", String.Join(", ", mod.tags));
