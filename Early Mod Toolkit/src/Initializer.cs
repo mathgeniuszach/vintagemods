@@ -118,6 +118,7 @@ namespace EMTK {
                             Path.Combine(path, "Mods"),
                             Path.Combine(appdata, "VintagestoryData", "Mods")
                         };
+                        basepath = path;
                         break;
                     }
                 }
