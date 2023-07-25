@@ -77,8 +77,8 @@ namespace EMTK {
                 Directory.Delete(Path.Combine(GamePaths.Cache, "trash"), true);
             }
 
-            Console.WriteLine("EMTK: Searching ModDB for mods!");
-            ModAPI.CheckEMTKUpdate();
+            Console.WriteLine("EMTK: Searching ModDB for mods in another thread!");
+            new Thread(() => {ModAPI.CheckEMTKUpdate();}).Start();
             new Thread(() => {ModAPI.GetMods();}).Start();
 			
 			new ClientProgram(rawArgs);
