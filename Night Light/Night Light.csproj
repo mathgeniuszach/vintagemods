@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>1.3.2</Version>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.exe')">$(VINTAGE_STORY)</VintagestoryBin>
+    
+    <VintagestoryBin Condition="Exists('~/ApplicationData/vintagestory/Vintagestory.exe')">~/ApplicationData/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.exe')">/usr/share/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.exe')">/opt/vintagestory</VintagestoryBin>
+    
+    <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.exe')">$(AppData)/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.exe')">C:/Program Files/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.exe')">C:/Program Files (x86)/Vintagestory</VintagestoryBin>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(VintagestoryBin)/Vintagestory.exe"><Private>false</Private></Reference>
+    <Reference Include="$(VintagestoryBin)/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(VintagestoryBin)/Mods/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(VintagestoryBin)/Lib/*.dll"><Private>false</Private></Reference>
+    <Reference Remove="$(VintagestoryBin)/Lib/System*.dll"></Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="*ICENSE" CopyToOutputDirectory="PreserveNewest"/>
+    <None Include="resources/**">
+        <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <Target Name="Package" AfterTargets="AfterBuild">
+    <WriteLinesToFile
+      File="$(TargetDir)/modinfo.json"
+      Lines="$([System.IO.File]::ReadAllText($(TargetDir)/modinfo.json)
+        .Replace('%VERSION%','$(Version)'))
+        .Replace('%PROJECT%', '$(TargetName)')"
+      Overwrite="true"
+    />
+    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="$(TargetDir)" Overwrite="true"/>
+  </Target>
+
+</Project>

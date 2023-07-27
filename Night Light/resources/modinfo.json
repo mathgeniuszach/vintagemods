@@ -1,7 +1,7 @@
 {
     "Type": "Code",
-    "Name": "Night Light",
-    "Version": "1.3.1",
+    "Name": "%PROJECT%",
+    "Version": "%VERSION%",
     "NetworkVersion": null,
     "Description": "Brightens up a little bit of everything.",
     "ModID": "nightlight",

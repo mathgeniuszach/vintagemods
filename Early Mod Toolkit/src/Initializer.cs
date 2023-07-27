@@ -106,7 +106,9 @@ namespace EMTK {
                 } else {
                     potentialPaths = new[] {
                         basedir,
-                        "/usr/share/vintagestory"
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ApplicationData/vintagestory"),
+                        "/usr/share/vintagestory",
+                        "/opt/vintagestory"
                     };
                 }
 

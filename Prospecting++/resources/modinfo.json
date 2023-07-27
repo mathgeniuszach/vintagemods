@@ -1,7 +1,7 @@
 {
     "Type": "Code",
-    "Name": "Prospecting++",
-    "Version": "1.2.1",
+    "Name": "%PROJECT%",
+    "Version": "%VERSION%",
     "NetworkVersion": null,
     "Description": "Adds double and triple radius prospecting modes with false negatives.",
     "ModID": "prospectingplusplus",

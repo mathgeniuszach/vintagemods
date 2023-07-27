@@ -14,14 +14,12 @@ namespace NightLight {
     }
 
     [HarmonyPatch]
-    public class NightLight : ModSystem
-    {
+    public class NightLight : ModSystem {
         public static ICoreAPI api;
         public static NightLightConfig config;
         public static Harmony harmony;
 
-        public override bool ShouldLoad(EnumAppSide side)
-        {
+        public override bool ShouldLoad(EnumAppSide side) {
             return side == EnumAppSide.Client;
         }
 

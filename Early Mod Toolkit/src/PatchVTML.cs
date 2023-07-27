@@ -246,7 +246,9 @@ namespace EMTK {
             return text
                 .Replace("&nbsp;", " ")
                 .Replace("&amp;", "&")
-                .Replace("&deg;", "°");
+                .Replace("&deg;", "°")
+                .Replace("&lt;", "<")
+                .Replace("&gt;", ">");
         }
 
         public static void addNewline(ICoreClientAPI capi, ref List<RichTextComponentBase> elems, CairoFont font) {
