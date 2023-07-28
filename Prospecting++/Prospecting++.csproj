@@ -36,9 +36,7 @@
   <Target Name="Package" AfterTargets="AfterBuild">
     <WriteLinesToFile
       File="$(TargetDir)/modinfo.json"
-      Lines="$([System.IO.File]::ReadAllText($(TargetDir)/modinfo.json)
-        .Replace('%VERSION%','$(Version)'))
-        .Replace('%PROJECT%', '$(TargetName)')"
+      Lines="$([System.IO.File]::ReadAllText('$(TargetDir)/modinfo.json').Replace('%VERSION%','$(Version)').Replace('%PROJECT%', '$(TargetName)'))"
       Overwrite="true"
     />
     <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="$(TargetDir)" Overwrite="true"/>
