@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using HarmonyLib;
@@ -49,6 +50,8 @@ namespace EMTK {
                     return response.GetResponseStream();
                 } catch (Exception ex) {
                     if (trial <= 0) throw ex;
+                    // De-race condition?
+                    Thread.Sleep(100 + EMTK.rng.Next(0, 50));
                 }
             }
             
