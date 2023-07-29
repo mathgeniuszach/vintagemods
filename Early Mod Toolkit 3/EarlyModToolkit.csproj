@@ -1,0 +1,46 @@
+<!-- dotnet build -configuration Debug -runtime win10-x64 -no-self-contained -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>3.0.0</Version>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VintagestoryBin>/home/$(USER)/Downloads/vintagestory/</VintagestoryBin>
+    <!-- <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.exe')">$(VINTAGE_STORY)</VintagestoryBin>
+    
+    <VintagestoryBin Condition="Exists('/home/$(USER)/ApplicationData/vintagestory/Vintagestory.exe')">/home/$(USER)/ApplicationData/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.exe')">/usr/share/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.exe')">/opt/vintagestory</VintagestoryBin>
+    
+    <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.exe')">$(AppData)/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.exe')">C:/Program Files/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.exe')">C:/Program Files (x86)/Vintagestory</VintagestoryBin> -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(VintagestoryBin)/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(VintagestoryBin)/Mods/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(VintagestoryBin)/Lib/*.dll"><Private>false</Private></Reference>
+    <Reference Remove="$(VintagestoryBin)/Lib/System*.dll"></Reference>
+    <Reference Remove="$(VintagestoryBin)/Lib/CairoSharp.dll"></Reference>
+  </ItemGroup>
+
+  <!-- <ItemGroup>
+    <Reference Include="System.IO.Compression" Version="4.3.0"/>
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>
+  </ItemGroup> -->
+
+  <!-- <ItemGroup>
+    <None Include="*ICENSE" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup> -->
+
+  <Target Name="Package" AfterTargets="PostBuildEvent">
+    <!-- <Delete Files="$(TargetDir)/System.IO.Compression.ZipFile.dll;$(TargetDir)/EarlyModToolkit.exe.config"/> -->
+    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="$(TargetDir)" Overwrite="true"/>
+  </Target>
+
+</Project>
