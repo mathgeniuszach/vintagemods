@@ -43,11 +43,15 @@ namespace EMTK {
         public ElementBounds listBounds;
 
         public List<CustomModCellEntry> modCells = new List<CustomModCellEntry>();
+        public int totalCount = 0;
         public string query = "";
         public string sortingMethod = "Recently Updated";
         public string side = "any";
+        public int maxShown = RuntimeEnv.OS == OS.Windows ? 50 : -1; // Windows has problems with large lists
         public bool ascending = false;
-        public float scrollLoc = 0;
+
+        public float scrollLoc = 0.0f;
+        public float oldScrollLoc = 0.0f;
 
         public static float visibleHeight;
 
@@ -62,7 +66,10 @@ namespace EMTK {
 		}
 
         public void InitGui() {
+            oldScrollLoc = scrollLoc;
+
             Size2d box = ElementBoundsPlus.GetBoxSize();
+            queueReloads = false;
 
             this.ElementComposer = base.dialogBase("mainmenu-browsemods", -1.0, -1.0)
                 .AddTextInput(
@@ -78,12 +85,17 @@ namespace EMTK {
                 .AddDropDown(
                     new[] {"default", "reversed"}, new[] {"Descending", "Ascending"}, 0,
                     (c, s) => {ascending = c == "reversed"; QueueReloadCells();},
-                    ElementBounds.Fixed(200.0, 46.0, 130.0, 31.0), "querysortreversed"
+                    ElementBounds.Fixed(190.0, 46.0, 120.0, 31.0), "querysortreversed"
                 )
                 .AddDropDown(
                     new[] {"any", "client", "server", "both"}, new[] {"Any-sided", "Client-only", "Server-only", "Both-sided"}, 0,
                     (c, s) => {side = c; QueueReloadCells();},
-                    ElementBounds.Fixed(350.0, 46.0, 130.0, 32.0), "queryside"
+                    ElementBounds.Fixed(320.0, 46.0, 115.0, 32.0), "queryside"
+                )
+                .AddDropDown(
+                    new[] {"5", "10", "25", "50", "100", "-1"}, new[] {"Show 5", "Show 10", "Show 25", "Show 50", "Show 100", "Show All"}, 0,
+                    (c, s) => {maxShown = int.Parse(c); QueueReloadCells();},
+                    ElementBounds.Fixed(445.0, 46.0, 110.0, 33.0), "querymaxcount"
                 )
                 .AddInset(ElementBounds.Fixed(10.0, 90.0, box.Width-40.0, box.Height-145.5))
                 .AddVerticalScrollbar(
@@ -102,18 +114,19 @@ namespace EMTK {
                         "modsbrowselist"
                     )
                 .EndClip()
+                .AddDynamicText(
+                    "", CairoFont.WhiteSmallishText(),
+                    ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 400.0, 30.0),
+                    "modcount"
+                )
                 .AddButton(
                     "Back", () => {EMTK.sm.LoadScreen(parentScreen); return true;},
                     ElementBounds.Fixed(EnumDialogArea.RightBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                 )
                 .Compose();
             
-            QueueReloadCells();
-            
             this.listBounds.CalcWorldBounds();
             this.clippingBounds.CalcWorldBounds();
-
-            float oldScrollLoc = scrollLoc;
 
             this.ElementComposer.GetScrollbar("scrollbar").SetHeights(
                 (float)clippingBounds.fixedHeight,
@@ -121,15 +134,22 @@ namespace EMTK {
             );
 
             this.ElementComposer.GetTextInput("querytext").SetValue(query);
+            
             this.ElementComposer.GetDropDown("queryside").SetSelectedValue(side);
-            if (ascending) this.ElementComposer.GetDropDown("querysortreversed").SetSelectedValue("reversed");
             this.ElementComposer.GetDropDown("querysortmethod").SetSelectedValue(sortingMethod);
-            if (oldScrollLoc > 0) {
-                handlehandler.Invoke(this.ElementComposer.GetScrollbar("scrollbar"), new object[] {oldScrollLoc});
+            this.ElementComposer.GetDropDown("querymaxcount").SetSelectedValue(maxShown.ToString());
+            if (ascending) this.ElementComposer.GetDropDown("querysortreversed").SetSelectedValue("reversed");
+            queueReloads = true;
+            
+            if (modCells.Count > 0) {
+                ReloadCells();
+            } else {
+                QueueReloadCells();
             }
         }
 
         public List<CustomModCellEntry> LoadModCells() {
+            Thread.Sleep(1000);
             while (!ModAPI.modsQueryFinished) Thread.Sleep(100);
 
             // Sort by sorting methods
@@ -144,31 +164,38 @@ namespace EMTK {
             if (side != "any") cells = cells.Where(m => m.Summary.side == side);
 
             // Sort by queries
-            if (query.Length == 0) {
-                modCells = cells.ToList();
-                return modCells;
+            if (query.Length > 0) {
+                string[][] wordSets = query.Split(
+                    new[] {"|"}, StringSplitOptions.RemoveEmptyEntries
+                ).Select(s => s.Split(
+                    new char[] {' '}, StringSplitOptions.RemoveEmptyEntries
+                )).ToArray();
+
+                cells = cells.Where(m => {
+                    string keywords = m.Keywords;
+                    foreach (string[] wordSet in wordSets) {
+                        bool wordSetMatch = true;
+                        foreach (string word in wordSet) {
+                            if (!keywords.Contains(word)) {
+                                wordSetMatch = false;
+                                break;
+                            } 
+                        }
+                        if (wordSetMatch) return true;
+                    }
+                    return false;
+                });
             }
 
-            string[][] wordSets = query.Split(
-                new[] {"|"}, StringSplitOptions.RemoveEmptyEntries
-            ).Select(s => s.Split(
-                new char[] {' '}, StringSplitOptions.RemoveEmptyEntries
-            )).ToArray();
+            if (maxShown > 0) {
+                totalCount = cells.Count();
+                cells = cells.Take(maxShown);
+                modCells = cells.ToList();
+            } else {
+                modCells = cells.ToList();
+                totalCount = modCells.Count;
+            }
 
-            modCells = cells.Where(m => {
-                string keywords = m.Keywords;
-                foreach (string[] wordSet in wordSets) {
-                    bool wordSetMatch = true;
-                    foreach (string word in wordSet) {
-                        if (!keywords.Contains(word)) {
-                            wordSetMatch = false;
-                            break;
-                        } 
-                    }
-                    if (wordSetMatch) return true;
-                }
-                return false;
-            }).ToList();
             return modCells;
 		}
 
@@ -180,29 +207,42 @@ namespace EMTK {
 			};
 		}
 
+        volatile bool queueReloads = false;
+        volatile bool queuedReload = false;
+        Thread reloadCellThread = null;
+
         object reloadLock = new object();
-        object varLock = new object();
-        int queuedReloads = 0;
 
         public void QueueReloadCells() {
-            modCells = new List<CustomModCellEntry>();
-            ReloadCells();
+            if (!queueReloads) return;
 
-            lock (varLock) {
-                if (queuedReloads > 1) return;
-                queuedReloads++;
-            }
+            lock (reloadLock) {
+                HideCells();
 
-            new Thread(() => {
-                lock (reloadLock) {
-                    this.LoadModCells();
-                    lock (varLock) {
-                        queuedReloads--;
-                    }
-
-                    ScreenManager.EnqueueMainThreadTask(new Action(ReloadCells));
+                if (reloadCellThread == null) {
+                    reloadCellThread = new Thread(() => {
+                        while (true) {
+                            queuedReload = false;
+                            this.LoadModCells();
+                            // Only check for looping again when not queueing for another thread
+                            lock (reloadLock) {
+                                if (!queuedReload) {
+                                    ScreenManager.EnqueueMainThreadTask(new Action(ReloadCells));
+                                    reloadCellThread = null;
+                                    return;
+                                }
+                            }
+                        }
+                    });
+                    reloadCellThread.Start();
+                } else {
+                    queuedReload = true;
                 }
-            }).Start();
+            }
+        }
+
+        public void HideCells() {
+            this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").ReloadCells(new List<CustomModCellEntry>());
         }
 
         public void ReloadCells() {
@@ -216,6 +256,17 @@ namespace EMTK {
                 (float)clippingBounds.fixedHeight,
                 (float)bounds.fixedHeight
             );
+
+            this.ElementComposer.GetDynamicText("modcount").SetNewText(
+                maxShown > 0
+                    ? String.Format("{0} mods found; {1} shown", totalCount, Math.Min(modCells.Count, maxShown))
+                    : String.Format("{0} mods found", totalCount)
+            );
+
+            if (oldScrollLoc > 0.0f) {
+                handlehandler.Invoke(this.ElementComposer.GetScrollbar("scrollbar"), new object[] {oldScrollLoc});
+                oldScrollLoc = 0.0f;
+            }
         }
 
         public override void OnScreenLoaded() {
