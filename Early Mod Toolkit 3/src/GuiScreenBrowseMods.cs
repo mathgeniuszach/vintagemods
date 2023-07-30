@@ -134,7 +134,6 @@ namespace EMTK {
             );
 
             this.ElementComposer.GetTextInput("querytext").SetValue(query);
-            
             this.ElementComposer.GetDropDown("queryside").SetSelectedValue(side);
             this.ElementComposer.GetDropDown("querysortmethod").SetSelectedValue(sortingMethod);
             this.ElementComposer.GetDropDown("querymaxcount").SetSelectedValue(maxShown.ToString());
@@ -149,7 +148,6 @@ namespace EMTK {
         }
 
         public List<CustomModCellEntry> LoadModCells() {
-            Thread.Sleep(1000);
             while (!ModAPI.modsQueryFinished) Thread.Sleep(100);
 
             // Sort by sorting methods
