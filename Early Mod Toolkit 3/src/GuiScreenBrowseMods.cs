@@ -59,6 +59,7 @@ namespace EMTK {
 			this.ShowMainMenu = true;
             this.parentScreen = parentScreen;
 
+            ModAPI.SetModEntryFont();
 			InitGui();
             
 			screenManager.GamePlatform.WindowResized += (int w, int h) => {invalidate();};

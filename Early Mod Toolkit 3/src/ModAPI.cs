@@ -128,6 +128,21 @@ namespace EMTK {
             }
         }
 
+        public static bool fontSet = false;
+        public static void SetModEntryFont() {
+            if (fontSet) return;
+
+            var medFont = CairoFont.WhiteSmallishText();
+            var smallFont = CairoFont.WhiteSmallText();
+
+            foreach (CustomModCellEntry entry in modCells) {
+                entry.TitleFont = medFont;
+                entry.DetailTextFont = smallFont;
+            }
+
+            fontSet = true;
+        }
+
         public static APIStatusModList GetMods(int tries = 3) {
             if (modListCache != null) {
                 string code = modListCache.statuscode;
@@ -135,9 +150,6 @@ namespace EMTK {
             }
 
             try {
-                // var medFont = CairoFont.WhiteSmallishText();
-                // var smallFont = CairoFont.WhiteSmallText();
-
                 HttpResponseMessage response = MakeRequest("https://mods.vintagestory.at/api/mods", tries);
                 using (var reader = new StreamReader(response.Content.ReadAsStream())) {
                     modListCache = JsonConvert.DeserializeObject<APIStatusModList>(reader.ReadToEnd());
