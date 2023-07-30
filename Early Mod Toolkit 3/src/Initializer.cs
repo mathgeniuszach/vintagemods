@@ -96,7 +96,7 @@ namespace EMTK {
                 } else {
                     potentialPaths = new[] {
                         basedir,
-                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads/vintagestory"),
+                        // Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads/vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ApplicationData/vintagestory"),
                         "/usr/share/vintagestory",
                         "/opt/vintagestory"
