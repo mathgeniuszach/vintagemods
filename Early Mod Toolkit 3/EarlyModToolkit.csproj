@@ -29,17 +29,11 @@
     <Reference Remove="$(VintagestoryBin)/Lib/CairoSharp.dll"></Reference>
   </ItemGroup>
 
-  <!-- <ItemGroup>
-    <Reference Include="System.IO.Compression" Version="4.3.0"/>
-    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>
-  </ItemGroup> -->
-
-  <!-- <ItemGroup>
+  <ItemGroup>
     <None Include="*ICENSE" CopyToOutputDirectory="PreserveNewest"/>
-  </ItemGroup> -->
+  </ItemGroup>
 
   <Target Name="Package" AfterTargets="PostBuildEvent">
-    <!-- <Delete Files="$(TargetDir)/System.IO.Compression.ZipFile.dll;$(TargetDir)/EarlyModToolkit.exe.config"/> -->
     <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="$(TargetDir)" Overwrite="true"/>
   </Target>
 
