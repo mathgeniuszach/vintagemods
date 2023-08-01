@@ -3,7 +3,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>3.0.0-rc.1</Version>
+    <Version>3.0.0</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7</TargetFramework>
   </PropertyGroup>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <Target Name="Package" AfterTargets="PostBuildEvent">
-    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="$(TargetDir)" Overwrite="true"/>
+    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="bin/Debug/net7" Overwrite="true"/>
   </Target>
 
 </Project>

@@ -66,7 +66,7 @@ namespace EMTK {
                 } else if (lmod != null) {
                     this.icon = lmod.Icon;
                 } else {
-                    this.icon = new BitmapExternal(Path.Combine(GamePaths.AssetsPath, "game/textures/gui/3rdpartymodicon.png"));
+                    this.icon = (BitmapExternal)ScreenManager.Platform.CreateBitmapFromPng(EMTK.sm.api.Assets.Get("game:textures/gui/3rdpartymodicon.png"));
                 }
             });
             Thread modAPIThread = new Thread(() => {

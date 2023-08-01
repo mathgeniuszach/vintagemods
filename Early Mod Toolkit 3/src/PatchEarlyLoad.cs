@@ -77,7 +77,7 @@ namespace EMTK {
             try {
                 if (__instance.Icon == null) {
                     AccessTools.PropertySetter(typeof(ModContainer), "Icon").Invoke(__instance, new[] {
-                        new BitmapExternal(Path.Combine(GamePaths.AssetsPath, "game/textures/gui/3rdpartymodicon.png"))
+                        ScreenManager.Platform.CreateBitmapFromPng(EMTK.sm.api.Assets.Get("game:textures/gui/3rdpartymodicon.png"))
                     });
                 }
             } catch (MissingMethodException) {}
