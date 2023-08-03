@@ -47,6 +47,7 @@ namespace EMTK {
         public string query = "";
         public string sortingMethod = "Recently Updated";
         public string side = "any";
+        public string installed = "both";
         public int maxShown = RuntimeEnv.OS == OS.Windows ? 50 : -1; // Windows has problems with large lists
         public bool ascending = false;
 
@@ -77,27 +78,34 @@ namespace EMTK {
                     s => {this.query = s.ToLower().Trim(); QueueReloadCells();},
                     CairoFont.WhiteSmallishText(), "querytext"
                 )
+                .AddStaticText("Filters:", CairoFont.WhiteSmallishText(), ElementBounds.Fixed(10.0, 45.0, 90.0, 30.0))
+                .AddDropDown(
+                    new[] {"any", "client", "server", "both"}, new[] {"Any-sided", "Client-only", "Server-only", "Both-sided"}, 0,
+                    (c, s) => {side = c; QueueReloadCells();},
+                    ElementBounds.Fixed(90.0, 45.0, 115.0, 30.0), "queryside"
+                )
+                .AddDropDown(
+                    new[] {"both", "installed", "uninstalled"}, new[] {"Installed & Uninstalled", "Installed", "Uninstalled"}, 0,
+                    (c, s) => {installed = c; QueueReloadCells();},
+                    ElementBounds.Fixed(210.0, 45.0, 210.0, 30.0), "queryinstalled"
+                )
+                .AddStaticText("Sort By:", CairoFont.WhiteSmallishText(), ElementBounds.Fixed(10.0, 80.0, 90.0, 30.0))
                 .AddDropDown(
                     sortingMethods, sortingMethods, 0,
                     (c, s) => {this.sortingMethod = c; QueueReloadCells();},
-                    ElementBounds.Fixed(10.0, 45.0, 170.0, 30.0), "querysortmethod"
+                    ElementBounds.Fixed(90.0, 80.0, 170.0, 30.0), "querysortmethod"
                 )
                 .AddDropDown(
                     new[] {"default", "reversed"}, new[] {"Descending", "Ascending"}, 0,
                     (c, s) => {ascending = c == "reversed"; QueueReloadCells();},
-                    ElementBounds.Fixed(190.0, 46.0, 120.0, 31.0), "querysortreversed"
-                )
-                .AddDropDown(
-                    new[] {"any", "client", "server", "both"}, new[] {"Any-sided", "Client-only", "Server-only", "Both-sided"}, 0,
-                    (c, s) => {side = c; QueueReloadCells();},
-                    ElementBounds.Fixed(320.0, 46.0, 115.0, 32.0), "queryside"
+                    ElementBounds.Fixed(265.0, 80.0, 120.0, 30.0), "querysortreversed"
                 )
                 .AddDropDown(
                     new[] {"5", "10", "25", "50", "100", "-1"}, new[] {"Show 5", "Show 10", "Show 25", "Show 50", "Show 100", "Show All"}, 0,
                     (c, s) => {maxShown = int.Parse(c); QueueReloadCells();},
-                    ElementBounds.Fixed(445.0, 46.0, 110.0, 33.0), "querymaxcount"
+                    ElementBounds.Fixed(EnumDialogArea.RightTop, -5.0, 80.0, 110.0, 30.0), "querymaxcount"
                 )
-                .AddInset(ElementBounds.Fixed(10.0, 90.0, box.Width-40.0, box.Height-145.5))
+                .AddInset(ElementBounds.Fixed(10.0, 120.0, box.Width-40.0, box.Height-150.5))
                 .AddVerticalScrollbar(
                     (v) => {
                         scrollLoc = (float)handlepos.GetValue(this.ElementComposer.GetScrollbar("scrollbar"));
@@ -105,8 +113,8 @@ namespace EMTK {
                         bounds.fixedY = -v;
                         bounds.CalcWorldBounds();
                     },
-                    ElementStdBounds.VerticalScrollbar(ElementBounds.Fixed(20.0, 90.0, box.Width-50.0, box.Height-145.0)), "scrollbar")
-                .BeginClip(clippingBounds = ElementBounds.Fixed(20.0, 90.0, box.Width-60.0, box.Height-145.0))
+                    ElementStdBounds.VerticalScrollbar(ElementBounds.Fixed(20.0, 120.0, box.Width-50.0, box.Height-150.0)), "scrollbar")
+                .BeginClip(clippingBounds = ElementBounds.Fixed(20.0, 120.0, box.Width-60.0, box.Height-150.0))
                     .AddCellList(
                         listBounds = clippingBounds.ForkContainingChild(0.0, 0.0, 0.0, 0.0).WithFixedPadding(0.0, 10.0),
                         new OnRequireCell<CustomModCellEntry>(this.createCellElem),
@@ -116,12 +124,12 @@ namespace EMTK {
                 .EndClip()
                 .AddDynamicText(
                     "", CairoFont.WhiteSmallishText(),
-                    ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 400.0, 30.0),
+                    ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 10.0, 400.0, 30.0),
                     "modcount"
                 )
                 .AddButton(
                     "Back", () => {EMTK.sm.LoadScreen(parentScreen); return true;},
-                    ElementBounds.Fixed(EnumDialogArea.RightBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
+                    ElementBounds.Fixed(EnumDialogArea.RightBottom, 0.0, 12.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                 )
                 .Compose();
             
@@ -134,8 +142,8 @@ namespace EMTK {
             );
 
             this.ElementComposer.GetTextInput("querytext").SetValue(query);
-            
             this.ElementComposer.GetDropDown("queryside").SetSelectedValue(side);
+            this.ElementComposer.GetDropDown("queryinstalled").SetSelectedValue(installed);
             this.ElementComposer.GetDropDown("querysortmethod").SetSelectedValue(sortingMethod);
             this.ElementComposer.GetDropDown("querymaxcount").SetSelectedValue(maxShown.ToString());
             if (ascending) this.ElementComposer.GetDropDown("querysortreversed").SetSelectedValue("reversed");
@@ -161,6 +169,13 @@ namespace EMTK {
 
             // Sort by side
             if (side != "any") cells = cells.Where(m => m.Summary.side == side);
+
+            // Sort by installed
+            if (installed == "installed") {
+                cells = cells.Where(m => EMTK.loadedMods.ContainsKey(m.ModID));
+            } else if (installed == "uninstalled") {
+                cells = cells.Where(m => !EMTK.loadedMods.ContainsKey(m.ModID));
+            }
 
             // Sort by queries
             if (query.Length > 0) {

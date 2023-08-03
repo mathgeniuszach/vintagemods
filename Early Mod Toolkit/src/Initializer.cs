@@ -65,7 +65,6 @@ namespace EMTK {
                 Path.Combine(basepath, "assets")
             });
 
-            GamePaths.DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VintagestoryData");
             modProfilePath = Path.Combine(GamePaths.DataPath, "ModProfiles");
             activeModProfilePath = Path.Combine(modProfilePath, "ActiveProfile");
             

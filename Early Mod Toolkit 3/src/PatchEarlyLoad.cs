@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Diagnostics;
 using System;
@@ -18,6 +19,16 @@ using Vintagestory.API.Server;
 namespace EMTK {
     [HarmonyPatch]
     public static class EarlyLoadPatcher {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AppDomain), "BaseDirectory", MethodType.Getter)]
+        public static bool GetBaseDirectory(AppDomain __instance, ref string __result) {
+            if (__instance == AppDomain.CurrentDomain) {
+                __result = Initializer.basepath;
+                return false;
+            }
+            return true;
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GamePaths), "Binaries", MethodType.Getter)]
         public static bool GetBinaries(ref string __result) {

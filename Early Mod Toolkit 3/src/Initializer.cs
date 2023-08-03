@@ -53,7 +53,6 @@ namespace EMTK {
                 Path.Combine(basepath, "assets")
             });
 
-            GamePaths.DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VintagestoryData");
             modProfilePath = Path.Combine(GamePaths.DataPath, "ModProfiles");
             activeModProfilePath = Path.Combine(modProfilePath, "ActiveProfile");
             
@@ -96,7 +95,7 @@ namespace EMTK {
                 } else {
                     potentialPaths = new[] {
                         basedir,
-                        // Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads/vintagestory"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads/vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ApplicationData/vintagestory"),
                         "/usr/share/vintagestory",
                         "/opt/vintagestory"
