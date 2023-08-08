@@ -1,0 +1,12 @@
+{
+    "Type": "Code",
+    "Name": "%PROJECT%",
+    "Version": "%VERSION%",
+    "NetworkVersion": null,
+    "Description": "Tweaks the title screen.",
+    "ModID": "titlescreentweak",
+    "Authors": ["mathgeniuszach"],
+    "Side": "Client",
+    "RequiredOnClient": true,
+    "RequiredOnServer": false
+}
