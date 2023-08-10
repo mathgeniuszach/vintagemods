@@ -6,19 +6,19 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.exe')">$(VINTAGE_STORY)</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/home/$(USER)/ApplicationData/vintagestory/Vintagestory.dll')">/home/$(USER)/ApplicationData/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/home/$(USER)/.local/share/vintagestory/Vintagestory.dll')">~/ApplicationData/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.dll')">/usr/share/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.dll')">/opt/vintagestory</VintagestoryBin>
     
-    <VintagestoryBin Condition="Exists('~/ApplicationData/vintagestory/Vintagestory.exe')">~/ApplicationData/vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.exe')">/usr/share/vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.exe')">/opt/vintagestory</VintagestoryBin>
-    
-    <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.exe')">$(AppData)/Vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.exe')">C:/Program Files/Vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.exe')">C:/Program Files (x86)/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.dll')">$(AppData)/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.dll')">C:/Program Files/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.dll')">C:/Program Files (x86)/Vintagestory</VintagestoryBin>
+
+    <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.dll')">$(VINTAGE_STORY)</VintagestoryBin>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="$(VintagestoryBin)/Vintagestory.exe"><Private>false</Private></Reference>
     <Reference Include="$(VintagestoryBin)/*.dll"><Private>false</Private></Reference>
     <Reference Include="$(VintagestoryBin)/Mods/*.dll"><Private>false</Private></Reference>
     <Reference Include="$(VintagestoryBin)/Lib/*.dll"><Private>false</Private></Reference>
