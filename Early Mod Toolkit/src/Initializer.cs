@@ -99,6 +99,7 @@ namespace EMTK {
                 if (Path.DirectorySeparatorChar == '\\') {
                     potentialPaths = new[] {
                         basedir,
+                        Path.GetDirectoryName(basedir),
                         Path.Combine(appdata, "Vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Vintagestory")
@@ -106,6 +107,7 @@ namespace EMTK {
                 } else {
                     potentialPaths = new[] {
                         basedir,
+                        Path.GetDirectoryName(basedir),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ApplicationData/vintagestory"),
                         "/usr/share/vintagestory",
                         "/opt/vintagestory"
@@ -113,7 +115,8 @@ namespace EMTK {
                 }
 
                 foreach (string path in potentialPaths) {
-                    if (File.Exists(Path.Combine(path, "Vintagestory.exe"))) {
+                    // Vintagestory.dll is present in .NET7 builds. We don't want to launch on these.
+                    if (File.Exists(Path.Combine(path, "Vintagestory.exe")) && !File.Exists(Path.Combine(path, "Vintagestory.dll"))) {
                         ASSEMBLY_PATHS = new[] {
                             path,
                             Path.Combine(path, "Lib"),
@@ -128,7 +131,8 @@ namespace EMTK {
                 if (ASSEMBLY_PATHS == null) {
                     string error =
                         "Error; Vintagestory.exe not found!\r\n" +
-                        "Place the executable in the same folder where you installed Vintagestory.exe, or " + 
+                        "Make sure you're using the right .NET version (.NET4 or .NET7).\r\n" +
+                        "Otherwise, place the executable in the same folder where you installed Vintagestory.exe, or " + 
                         "install Vintagestory to one of \"%AppData%\\Vintagestory\", \"C:\\Program Files\\Vintagestory\", \"C:\\Program Files (x86)\\Vintagestory\" on Windows or /usr/share/vintagestory on Linux.";
                     Console.WriteLine(error);
                     File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ERROR.txt"), error);

@@ -88,6 +88,7 @@ namespace EMTK {
                 if (Path.DirectorySeparatorChar == '\\') {
                     potentialPaths = new[] {
                         basedir,
+                        Path.GetDirectoryName(basedir),
                         Path.Combine(appdata, "Vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Vintagestory")
@@ -95,6 +96,7 @@ namespace EMTK {
                 } else {
                     potentialPaths = new[] {
                         basedir,
+                        Path.GetDirectoryName(basedir),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads/vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ApplicationData/vintagestory"),
                         "/usr/share/vintagestory",
@@ -115,14 +117,14 @@ namespace EMTK {
                     }
                 }
 
-                if (ASSEMBLY_PATHS == null) {
-                    string error =
-                        "Error; Vintagestory.exe not found!\r\n" +
-                        "Place the executable in the same folder where you installed Vintagestory.exe, or " + 
+                if (ASSEMBLY_PATHS == null) {string error =
+                        "Error; Vintagestory not found!\r\n" +
+                        "Make sure you're using the right .NET version (.NET4 or .NET7).\r\n" +
+                        "Otherwise, place the executable in the same folder where you installed Vintagestory, or " + 
                         "install Vintagestory to one of \"%AppData%\\Vintagestory\", \"C:\\Program Files\\Vintagestory\", \"C:\\Program Files (x86)\\Vintagestory\" on Windows or /usr/share/vintagestory on Linux.";
                     Console.WriteLine(error);
                     File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ERROR.txt"), error);
-                    throw new Exception("Failed to locate vintagestory executable.");
+                    throw new Exception("Failed to locate vintagestory.");
                 }
             }
 

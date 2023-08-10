@@ -3,22 +3,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>3.0.1</Version>
+    <Version>3.0.2</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
+    <VintagestoryBin Condition="Exists('/home/$(USER)/ApplicationData/vintagestory/Vintagestory.dll')">/home/$(USER)/ApplicationData/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.dll')">/usr/share/vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.dll')">/opt/vintagestory</VintagestoryBin>
+    
+    <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.dll')">$(AppData)/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.dll')">C:/Program Files/Vintagestory</VintagestoryBin>
+    <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.dll')">C:/Program Files (x86)/Vintagestory</VintagestoryBin>
+
+    <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.dll')">$(VINTAGE_STORY)</VintagestoryBin>
+
     <VintagestoryBin>/home/$(USER)/Downloads/vintagestory/</VintagestoryBin>
-    <!-- <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.exe')">$(VINTAGE_STORY)</VintagestoryBin>
-    
-    <VintagestoryBin Condition="Exists('/home/$(USER)/ApplicationData/vintagestory/Vintagestory.exe')">/home/$(USER)/ApplicationData/vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.exe')">/usr/share/vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.exe')">/opt/vintagestory</VintagestoryBin>
-    
-    <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.exe')">$(AppData)/Vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.exe')">C:/Program Files/Vintagestory</VintagestoryBin>
-    <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.exe')">C:/Program Files (x86)/Vintagestory</VintagestoryBin> -->
   </PropertyGroup>
 
   <ItemGroup>

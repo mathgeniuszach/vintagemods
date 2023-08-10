@@ -49,6 +49,7 @@ namespace EMTK {
                 modCells.Add(new CustomModCellEntry() {
                     ModID = modid,
                     Title = modid,
+                    DetailText = ModAPI.latestReleaseCache[modid].filename,
                     RightTopText = String.Format("{0} -> {1}", EMTK.loadedMods[modid].Info.Version, ModAPI.latestVersionCache[modid])
                 });
             }
