@@ -26,6 +26,7 @@
     <Reference Include="$(VintagestoryBin)/Mods/*.dll"><Private>false</Private></Reference>
     <Reference Include="$(VintagestoryBin)/Lib/*.dll"><Private>false</Private></Reference>
     <Reference Remove="$(VintagestoryBin)/Lib/System*.dll"></Reference>
+    <Reference Remove="$(VintagestoryBin)/Lib/CairoSharp.dll"></Reference>
   </ItemGroup>
 
   <ItemGroup>
