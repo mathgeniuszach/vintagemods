@@ -20,6 +20,13 @@ namespace EMTK {
     [HarmonyPatch]
     public static class EarlyLoadPatcher {
         [HarmonyPrefix]
+        [HarmonyPatch(typeof(GamePaths), "EnsurePathsExist")]
+        public static void EnsurePathsExist() {
+            Initializer.modProfilePath = Path.Combine(GamePaths.DataPath, "ModProfiles");
+            Initializer.activeModProfilePath = Path.Combine(Initializer.modProfilePath, "ActiveProfile");
+        }
+
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(AppDomain), "BaseDirectory", MethodType.Getter)]
         public static bool GetBaseDirectory(AppDomain __instance, ref string __result) {
             if (__instance == AppDomain.CurrentDomain) {

@@ -52,9 +52,6 @@ namespace EMTK {
             typeof(GamePaths).GetProperty("AssetsPath").GetSetMethod(true).Invoke(null, new[] {
                 Path.Combine(basepath, "assets")
             });
-
-            modProfilePath = Path.Combine(GamePaths.DataPath, "ModProfiles");
-            activeModProfilePath = Path.Combine(modProfilePath, "ActiveProfile");
             
             #endregion
             Console.WriteLine("EMTK: Patching complete!");
