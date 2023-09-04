@@ -40,10 +40,11 @@ namespace EMTK {
         }
 
         public static void Save() {
-            EarlyAPI.StoreModConfig<EMTKConfig>(instance, "emtk.json");
+            EarlyAPI.StoreModConfig(instance, "emtk.json");
         }
 
         public HashSet<string> excludedFromUpdates = new HashSet<string>();
+        public HashSet<string> enabledEarlyMods = new HashSet<string>();
     }
 
     [HarmonyPatch]
@@ -53,8 +54,10 @@ namespace EMTK {
 
         public static volatile bool updateAvailable = false;
         public static string version;
-        public static List<CachedMod> cachedMods = new List<CachedMod>();
-        public static Dictionary<string, ModContainer> loadedMods = new Dictionary<string, ModContainer>();
+        public static List<CachedMod> earlyModsCache;
+        public static List<CachedMod> newEarlyModsCache = new();
+        public static HashSet<string> earlyModsAvailable = new();
+        public static Dictionary<string, ModContainer> loadedMods = new();
 
         public static Random rng = new Random();
 
@@ -84,7 +87,47 @@ namespace EMTK {
             return version;
         }
 
+        public static void FindEarlyMods() {
+            // This needs to run before the mod screen is loaded/reloaded, that way early mods can disable themselves by default
+
+            ModLoader modloader = (ModLoader) AccessTools.Field(typeof(ScreenManager), "modloader").GetValue(sm);
+            var ogMods = (List<ModContainer>) AccessTools.Field(typeof(ScreenManager), "allMods").GetValue(sm);
+            var mods = new List<ModContainer>(ogMods);
+
+            bool saveCS = false;
+            newEarlyModsCache.Clear();
+            earlyModsAvailable.Clear();
+            using (var asmloader = new ModAssemblyLoader(modloader.ModSearchPaths, mods)) {
+                foreach (ModContainer mod in mods) {
+                    string modid = mod.Info.ModID + "@" + mod.Info.Version;
+                    CachedMod cmod = new(mod);
+                    if (!cmod.early) continue;
+
+                    earlyModsAvailable.Add(modid);
+                    if (mod.Status != ModStatus.Enabled) continue;
+                    
+                    if (Config.enabledEarlyMods.Contains(modid)) {
+                        cmod.Unpack(modloader, asmloader);
+                        newEarlyModsCache.Add(cmod);
+                    } else {
+                        saveCS = true;
+                        mod.Status = ModStatus.Disabled;
+                        ClientSettings.DisabledMods.Add(modid);
+                    }
+                }
+            }
+
+            if (saveCS) ClientSettings.Inst.Save(true);
+
+            mods.RemoveAll((m) => m.Status != ModStatus.Enabled);
+            // AccessTools.Method(typeof(ModLoader), "ClearCacheFolder").Invoke(modloader, new[] {mods});
+
+            ScreenManager.Platform.Logger.Notification("EMTK: Found {0} early mods", newEarlyModsCache.Count);
+        }
+
         public static void EarlyLoadMods(bool reload = true) {
+            // This, and all subsequent load attempts need to run after the screen is loaded.
+
             while (sm == null) Thread.Sleep(100);
 
             ModLoader modloader = (ModLoader) AccessTools.Field(typeof(ScreenManager), "modloader").GetValue(sm);
@@ -96,24 +139,13 @@ namespace EMTK {
                 loadedMods[mod.Info.ModID.ToLower()] = mod;
             }
 
-            // Collect enabled mods and the mod loader
+            // Collect all enabled mods
             var mods = new List<ModContainer>(ogMods);
             mods.RemoveAll((m) => m.Status != ModStatus.Enabled);
 
-            // Unpack all early mods to load them and the code inside early
-            cachedMods.Clear();
-            using (var asmloader = new ModAssemblyLoader(modloader.ModSearchPaths, mods)) {
-                foreach (ModContainer mod in mods) {
-                    CachedMod cmod = new CachedMod(mod, modloader, asmloader);
-                    if (cmod.early) cachedMods.Add(cmod);
-                }
-            }
-            AccessTools.Method(typeof(ModLoader), "ClearCacheFolder").Invoke(modloader, new[] {mods});
-
-            ScreenManager.Platform.Logger.Notification("EMTK: Found {0} early mods", cachedMods.Count);
-
             // Sort systems to execute them in a particular order
-            cachedMods.Sort((a, b) => a.emi.LoadOrder.CompareTo(b.emi.LoadOrder));
+            earlyModsCache = new List<CachedMod>(newEarlyModsCache);
+            earlyModsCache.Sort((a, b) => a.emi.LoadOrder.CompareTo(b.emi.LoadOrder));
 
             // Setup origin locations for preloading assets
             var contentAssetOrigins = new OrderedDictionary<string, IAssetOrigin>();
@@ -150,7 +182,7 @@ namespace EMTK {
             // Run load functions of early mods in order
             ScreenManager.Platform.Logger.Notification("EMTK: Early loading mods!");
 
-            foreach (var cmod in cachedMods) {
+            foreach (var cmod in earlyModsCache) {
                 foreach (Type system in cmod.systems) {
                     try {
                         system.GetMethod("EarlyLoad")?.Invoke(null, new object[] {cmod.mod, sm});
@@ -169,12 +201,12 @@ namespace EMTK {
 
         public static void EarlyUnloadMods(bool reload = true) {
             while (sm == null) Thread.Sleep(100);
-            List<ModContainer> mods = (List<ModContainer>) AccessTools.Field(typeof(ScreenManager), "verifiedMods").GetValue(sm);
+            // List<ModContainer> mods = (List<ModContainer>) AccessTools.Field(typeof(ScreenManager), "verifiedMods").GetValue(sm);
 
             ScreenManager.Platform.Logger.Notification("EMTK: Early unloading mods!");
 
-            cachedMods.Reverse();
-            foreach (var cmod in cachedMods) {
+            earlyModsCache.Reverse();
+            foreach (var cmod in earlyModsCache) {
                 foreach (Type system in cmod.systems) {
                     try {
                         system.GetMethod("EarlyUnload")?.Invoke(null, null);
@@ -187,7 +219,7 @@ namespace EMTK {
                     }
                 }
             }
-            cachedMods.Clear();
+            earlyModsCache.Clear();
 
             ScreenManager.Platform.Logger.Notification("EMTK: Early unloading mod assets!");
 
@@ -231,7 +263,7 @@ namespace EMTK {
         public static void FullEarlyReloadMods() {
             bool reloadTitle = false;
 
-            foreach (CachedMod mod in cachedMods) {
+            foreach (CachedMod mod in earlyModsCache) {
                 if (mod.emi != null && mod.emi.ReloadTitle) {
                     reloadTitle = true;
                     break;
@@ -242,7 +274,7 @@ namespace EMTK {
             EarlyLoadMods();
 
             if (!reloadTitle) {
-                foreach (CachedMod mod in cachedMods) {
+                foreach (CachedMod mod in earlyModsCache) {
                     if (mod.emi != null && mod.emi.ReloadTitle) {
                         reloadTitle = true;
                         break;
@@ -257,9 +289,9 @@ namespace EMTK {
         // Some mods - and particularly assets - depend on each other to work properly.
         public static void FastEarlyReloadMods() {
             bool reloadTitle = false;
-            HashSet<string> reloaders = new HashSet<string>();
+            HashSet<string> reloaders = new();
 
-            foreach (CachedMod mod in cachedMods) {
+            foreach (CachedMod mod in earlyModsCache) {
                 if (mod.emi != null && mod.emi.ReloadTitle) {
                     // Count all the mods that modify the title screen.
                     reloaders.Add(mod.mod.Info.ModID + "@" + mod.mod.Info.Version);
@@ -269,7 +301,7 @@ namespace EMTK {
             EarlyUnloadMods(false);
             EarlyLoadMods(false);
 
-            foreach (CachedMod mod in cachedMods) {
+            foreach (CachedMod mod in earlyModsCache) {
                 if (mod.emi != null && mod.emi.ReloadTitle) {
                     string id = mod.mod.Info.ModID + "@" + mod.mod.Info.Version;
                     if (reloaders.Contains(id)) {
@@ -289,8 +321,8 @@ namespace EMTK {
         public static void AddSomeExternalAssets(ILogger Logger, ModLoader modloader) {
             AssetManager asm = ScreenManager.Platform.AssetManager;
 
-            List<string> assetOriginsForLog = new List<string>();
-			List<IAssetOrigin> externalOrigins = new List<IAssetOrigin>();
+            List<string> assetOriginsForLog = new();
+			List<IAssetOrigin> externalOrigins = new();
 
             foreach (KeyValuePair<string, IAssetOrigin> val in modloader.GetContentArchives()) {
                 asm.Origins.Add(val.Value);

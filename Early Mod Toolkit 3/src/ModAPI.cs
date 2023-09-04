@@ -25,22 +25,22 @@ using Vintagestory.Common;
 
 namespace EMTK {
     public static class ModAPI {
-        public static HttpClient httpClient = new HttpClient();
+        public static readonly HttpClient httpClient = new();
 
         public static readonly string ImageCacheDir = Path.Combine(GamePaths.Cache, "images");
         public static readonly string AssetsCacheDir = Path.Combine(GamePaths.Cache, "assets");
 
         public static volatile bool modsQueryFinished = false;
-        public static Dictionary<string, APIModSummary> modListSummary = new Dictionary<string, APIModSummary>();
-        public static List<CustomModCellEntry> modCells = new List<CustomModCellEntry>();
+        public static Dictionary<string, APIModSummary> modListSummary = new();
+        public static List<CustomModCellEntry> modCells = new();
 
         public static APIStatusModList modListCache = null;
-        public static Dictionary<string, APIStatusModInfo> modInfoCache = new Dictionary<string, APIStatusModInfo>();
+        public static Dictionary<string, APIStatusModInfo> modInfoCache = new();
 
-        public static Dictionary<string, SemVer> latestVersionCache = new Dictionary<string, SemVer>();
-        public static Dictionary<string, APIModRelease> latestReleaseCache = new Dictionary<string, APIModRelease>();
+        public static Dictionary<string, SemVer> latestVersionCache = new();
+        public static Dictionary<string, APIModRelease> latestReleaseCache = new();
 
-        public static bool hasInternet = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+        public static readonly bool hasInternet = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
         public static HttpResponseMessage MakeRequest(string url, int tries = 3) {
             if (!hasInternet) throw new WebException("No internet");
@@ -68,7 +68,7 @@ namespace EMTK {
 
         public static List<string> GetUpdates(List<ModContainer> mods) {
             try {
-                List<string> queryMods = new List<string>();
+                List<string> queryMods = new();
                 foreach (ModContainer mod in mods) {
                     string modid = mod?.Info?.ModID?.ToLower();
                     if (modid == null) continue;
@@ -89,7 +89,7 @@ namespace EMTK {
                 }
                 if (joined.Length > 0) MakeUpdatesQuery(joined);
 
-                List<string> modUpdates = new List<string>();
+                List<string> modUpdates = new();
 
                 // Any mods that did not come back are up to date. Cache this information too
                 foreach (ModContainer mod in mods) {

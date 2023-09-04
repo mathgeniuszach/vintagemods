@@ -17,8 +17,6 @@
     <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.dll')">C:/Program Files (x86)/Vintagestory</VintagestoryBin>
 
     <VintagestoryBin Condition="Exists('$(VINTAGE_STORY)/Vintagestory.dll')">$(VINTAGE_STORY)</VintagestoryBin>
-
-    <VintagestoryBin>/home/$(USER)/Downloads/vintagestory/</VintagestoryBin>
   </PropertyGroup>
 
   <ItemGroup>

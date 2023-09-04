@@ -48,13 +48,13 @@ namespace EMTK {
         //     yield return new CodeInstruction(OpCodes.Ret, null);
         // }
         public static void StoreModConfig<T>(T jsonSerializeableData, string filename) {
-			FileInfo fileInfo = new FileInfo(Path.Combine(GamePaths.ModConfig, filename));
+			FileInfo fileInfo = new(Path.Combine(GamePaths.ModConfig, filename));
 			GamePaths.EnsurePathExists(fileInfo.Directory.FullName);
 			string json = JsonConvert.SerializeObject(jsonSerializeableData, Formatting.Indented);
 			File.WriteAllText(fileInfo.FullName, json);
 		}
         public static void StoreModConfig(JsonObject jobj, string filename) {
-            FileInfo fileInfo = new FileInfo(Path.Combine(GamePaths.ModConfig, filename));
+            FileInfo fileInfo = new(Path.Combine(GamePaths.ModConfig, filename));
 			GamePaths.EnsurePathExists(fileInfo.Directory.FullName);
 			File.WriteAllText(fileInfo.FullName, jobj.Token.ToString());
         }
@@ -70,7 +70,7 @@ namespace EMTK {
 		{
 			string path = Path.Combine(GamePaths.ModConfig, filename);
 			if (File.Exists(path)) return JsonConvert.DeserializeObject<T>(File.ReadAllText(path));
-			return default(T);
+			return default;
 		}
         public static JsonObject LoadModConfig(string filename) {
             string path = Path.Combine(GamePaths.ModConfig, filename);

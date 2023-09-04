@@ -14,7 +14,7 @@ using Vintagestory.Client;
 using Vintagestory.ClientNative;
 using Vintagestory.Common;
 using Vintagestory.API.Client;
-using Vintagestory.API.Server;
+using Vintagestory.Client.NoObf;
 
 namespace EMTK {
     [HarmonyPatch]
@@ -52,6 +52,12 @@ namespace EMTK {
             EMTK.harmony.Unpatch(AccessTools.Method(typeof(ScreenManager), "Render"), HarmonyPatchType.Prefix, "emtk");
         }
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ScreenManager), "loadMods")]
+        public static void loadMods() {
+            EMTK.FindEarlyMods();
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ScreenManager), "EnqueueMainThreadTask")]
         public static void EnqueueMainThreadTask() {
@@ -67,9 +73,25 @@ namespace EMTK {
             EMTK.FullEarlyReloadMods();
         }
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(GuiScreenMods), "OnClickCellRight")]
         public static void OnClickCellRight(GuiScreenMods __instance, int cellIndex) {
+            GuiElementModCell guicell = (GuiElementModCell)__instance.ElementComposer.GetCellList<ModCellEntry>("modstable").elementCells[cellIndex];
+			ModContainer mod = guicell.cell.Mod;
+
+            string modid = mod.Info.ModID + "@" + mod.Info.Version;
+
+            // Turning an early mod cell on adds it to the list of allowed early mods
+            if (!guicell.On && EMTK.earlyModsAvailable.Contains(modid)) {
+                EMTK.Config.enabledEarlyMods.Add(modid);
+                EMTKConfig.Save();
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GuiScreenMods), "OnClickCellRight")]
+        public static void OnReloadModsPostfix() {
+            EMTK.FindEarlyMods();
             EMTK.FastEarlyReloadMods();
         }
 

@@ -14,16 +14,16 @@ using Vintagestory.Common;
 
 namespace EMTK {
     public class CachedMod {
-        public static FieldInfo cctx = AccessTools.Field(typeof(ModLoader), "compilationContext");
+        public static readonly FieldInfo cctx = AccessTools.Field(typeof(ModLoader), "compilationContext");
 
         public ModContainer mod;
 
         public bool early = false;
         public EarlyModInfo emi;
 
-        public Type[] systems = new Type[] {};
+        public Type[] systems = Array.Empty<Type>();
 
-        public CachedMod(ModContainer mod, ModLoader loader, ModAssemblyLoader asmloader) {
+        public CachedMod(ModContainer mod) {
             this.mod = mod;
 
             switch (mod.SourceType) {
@@ -32,11 +32,12 @@ namespace EMTK {
                         ZipArchiveEntry entry = zip.GetEntry("earlymod.json");
                         if (entry == null) return;
                         early = true;
+
+                        if (!mod.Info.Name.EndsWith("(EarlyMod)")) mod.Info.Name += " (EarlyMod)";
                         
                         try {
-                            using (var reader = new StreamReader(entry.Open())) {
-                                emi = JsonConvert.DeserializeObject<EarlyModInfo>(reader.ReadToEnd());
-                            }
+                            using var reader = new StreamReader(entry.Open());
+                            emi = JsonConvert.DeserializeObject<EarlyModInfo>(reader.ReadToEnd());
                         } catch (Exception ex) {
                             ScreenManager.Platform.Logger.Error(
                                 "An exception was thrown trying to load the EarlyModInfo of \"{0}\":\n{1}",
@@ -51,6 +52,8 @@ namespace EMTK {
                     if (!File.Exists(path)) return;
                     early = true;
 
+                    if (!mod.Info.Name.EndsWith("(EarlyMod)")) mod.Info.Name += " (EarlyMod)";
+
                     try {
                         emi = JsonConvert.DeserializeObject<EarlyModInfo>(File.ReadAllText(path));
                     } catch (Exception ex) {
@@ -62,17 +65,19 @@ namespace EMTK {
                     }
                     break;
                 default:
-                    if (mod.Assembly == null) return;
+                    // if (mod.Assembly == null) return;
 
-                    var attrs = mod.Assembly.GetCustomAttributes(typeof(EarlyModAttribute), false);
-                    if (attrs.Length < 1) return;
-                    early = true;
+                    // var attrs = mod.Assembly.GetCustomAttributes(typeof(EarlyModAttribute), false);
+                    // if (attrs.Length < 1) return;
+                    // early = true;
 
-                    emi = ((EarlyModAttribute)attrs[0]).ToInfo();
+                    // emi = ((EarlyModAttribute)attrs[0]).ToInfo();
 
                     return;
             }
+        }
 
+        public void Unpack(ModLoader loader, ModAssemblyLoader asmloader) {
             mod.Unpack(loader.UnpackPath);
             mod.LoadAssembly((ModCompilationContext)cctx.GetValue(loader), asmloader);
 
@@ -95,20 +100,20 @@ namespace EMTK {
         public double LoadOrder = 0.0;
     }
 
-    public class EarlyModAttribute : Attribute {
-        public bool ReloadTitle = false;
-        public double LoadOrder = 0.0;
+    // public class EarlyModAttribute : Attribute {
+    //     public bool ReloadTitle = false;
+    //     public double LoadOrder = 0.0;
 
-        public EarlyModAttribute(bool ReloadTitle = false, double LoadOrder = 0.0) {
-            this.ReloadTitle = ReloadTitle;
-            this.LoadOrder = LoadOrder;
-        }
+    //     public EarlyModAttribute(bool ReloadTitle = false, double LoadOrder = 0.0) {
+    //         this.ReloadTitle = ReloadTitle;
+    //         this.LoadOrder = LoadOrder;
+    //     }
 
-        public EarlyModInfo ToInfo() {
-            return new EarlyModInfo {
-                ReloadTitle = ReloadTitle,
-                LoadOrder = LoadOrder
-            };
-        }
-    }
+    //     public EarlyModInfo ToInfo() {
+    //         return new EarlyModInfo {
+    //             ReloadTitle = ReloadTitle,
+    //             LoadOrder = LoadOrder
+    //         };
+    //     }
+    // }
 }

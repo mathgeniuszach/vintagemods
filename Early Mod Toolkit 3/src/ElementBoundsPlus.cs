@@ -13,7 +13,7 @@ namespace EMTK {
             double x = 0.0, double y = 0.0,
             double px = 0.0, double py = 0.0
         ) {
-            ElementBounds bounds = new ElementBounds {
+            ElementBounds bounds = new() {
                 fixedOffsetX = x,
                 fixedOffsetY = y,
                 fixedWidth = -width,
@@ -34,7 +34,7 @@ namespace EMTK {
             double x = 0.0, double y = 0.0,
             double px = 0.0, double py = 0.0
         ) {
-            ElementBounds bounds = new ElementBounds {
+            ElementBounds bounds = new() {
                 Alignment = alignment,
                 fixedOffsetX = x,
                 fixedOffsetY = y,
