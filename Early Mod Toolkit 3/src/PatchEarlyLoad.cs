@@ -59,19 +59,15 @@ namespace EMTK {
             EMTK.harmony.Unpatch(AccessTools.Method(typeof(ScreenManager), "Render"), HarmonyPatchType.Prefix, "emtk");
         }
 
+        public static bool firstLoad = false;
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ScreenManager), "loadMods")]
         public static void loadMods() {
             EMTK.FindEarlyMods();
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(ScreenManager), "EnqueueMainThreadTask")]
-        public static void EnqueueMainThreadTask() {
-            EMTK.EarlyLoadMods();
-
-            // Single-use patch.
-            EMTK.harmony.Unpatch(typeof(ScreenManager).GetMethod("EnqueueMainThreadTask"), HarmonyPatchType.Prefix, "emtk");
+            if (!firstLoad) {
+                firstLoad = true;
+                EMTK.EarlyLoadMods();
+            }
         }
 
         [HarmonyPostfix]

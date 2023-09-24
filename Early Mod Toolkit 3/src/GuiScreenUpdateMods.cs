@@ -68,7 +68,7 @@ namespace EMTK {
                 .AddVerticalScrollbar(
                     (v) => {
                         scrollLoc = (float)handlepos.GetValue(this.ElementComposer.GetScrollbar("scrollbar"));
-                        ElementBounds bounds = this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").Bounds;
+                        ElementBounds bounds = this.ElementComposer.GetCellList<CustomModCellEntry>("modsupdatelist").Bounds;
                         bounds.fixedY = -v;
                         bounds.CalcWorldBounds();
                     },
@@ -78,7 +78,7 @@ namespace EMTK {
                         listBounds = clippingBounds.ForkContainingChild(0.0, 0.0, 0.0, 0.0).WithFixedPadding(0.0, 10.0),
                         new OnRequireCell<CustomModCellEntry>(this.createCellElem),
                         modCells,
-                        "modsbrowselist"
+                        "modsupdatelist"
                     )
                 .EndClip()
                 .AddButton(
@@ -182,7 +182,7 @@ namespace EMTK {
         public void OnClickCellLeft(int cellIndex) {}
 
         public void OnClickCellRight(int cellIndex) {
-            GuiElementCellList<CustomModCellEntry> cellList = this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist");
+            GuiElementCellList<CustomModCellEntry> cellList = this.ElementComposer.GetCellList<CustomModCellEntry>("modsupdatelist");
             GuiElementModCell guiCell = (GuiElementModCell)cellList.elementCells[cellIndex];
             guiCell.On = !guiCell.On;
 

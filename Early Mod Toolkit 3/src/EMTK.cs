@@ -99,20 +99,27 @@ namespace EMTK {
             earlyModsAvailable.Clear();
             using (var asmloader = new ModAssemblyLoader(modloader.ModSearchPaths, mods)) {
                 foreach (ModContainer mod in mods) {
-                    string modid = mod.Info.ModID + "@" + mod.Info.Version;
-                    CachedMod cmod = new(mod);
-                    if (!cmod.early) continue;
+                    try {
+                        if (mod == null) continue;
+                        
+                        CachedMod cmod = new(mod);
+                        if (!cmod.early) continue;
 
-                    earlyModsAvailable.Add(modid);
-                    if (mod.Status != ModStatus.Enabled) continue;
-                    
-                    if (Config.enabledEarlyMods.Contains(modid)) {
-                        cmod.Unpack(modloader, asmloader);
-                        newEarlyModsCache.Add(cmod);
-                    } else {
-                        saveCS = true;
-                        mod.Status = ModStatus.Disabled;
-                        ClientSettings.DisabledMods.Add(modid);
+                        string modid = mod.Info.ModID + "@" + mod.Info.Version;
+
+                        earlyModsAvailable.Add(modid);
+                        if (mod.Status != ModStatus.Enabled) continue;
+                        
+                        if (Config.enabledEarlyMods.Contains(modid)) {
+                            cmod.Unpack(modloader, asmloader);
+                            newEarlyModsCache.Add(cmod);
+                        } else {
+                            saveCS = true;
+                            mod.Status = ModStatus.Disabled;
+                            ClientSettings.DisabledMods.Add(modid);
+                        }
+                    } catch (NullReferenceException ex) {
+                        ScreenManager.Platform.Logger.Error(ex);
                     }
                 }
             }

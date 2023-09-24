@@ -71,7 +71,7 @@ namespace EMTK {
                 List<string> queryMods = new();
                 foreach (ModContainer mod in mods) {
                     string modid = mod?.Info?.ModID?.ToLower();
-                    if (modid == null) continue;
+                    if (modid == null || modid == "game" || modid == "creative" || modid == "survival") continue;
                     string ver = mod?.Info?.Version;
 
                     if (latestReleaseCache.ContainsKey(modid)) continue;
@@ -112,6 +112,7 @@ namespace EMTK {
 
         private static void MakeUpdatesQuery(string mods, int tries = 3) {
             string query = "https://mods.vintagestory.at/api/updates?mods=" + mods;
+            Console.WriteLine(query);
 
             HttpResponseMessage response = MakeRequest(query, tries);
             using (var reader = new StreamReader(response.Content.ReadAsStream())) {
@@ -121,8 +122,8 @@ namespace EMTK {
                 }
                 if (updates.Updates != null) {
                     foreach (KeyValuePair<string, APIModRelease> mr in updates.Updates) {
-                        latestVersionCache[mr.Key] = SemVer.Parse(mr.Value?.modversion);
-                        latestReleaseCache[mr.Key] = mr.Value;
+                        latestVersionCache[mr.Key.ToLower()] = EMTK.ParseVersion(mr.Key.ToLower(), mr.Value?.modversion);
+                        latestReleaseCache[mr.Key.ToLower()] = mr.Value;
                     }
                 }
             }

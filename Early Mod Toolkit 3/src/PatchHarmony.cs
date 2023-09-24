@@ -1,6 +1,7 @@
 using System.Linq;
 
 using HarmonyLib;
+using Vintagestory.Client;
 
 namespace EMTK {
     // HACK: This is some self-referential harmony patching of harmony itself, to prevent EMTK from being unpatched unintentionally.
@@ -11,6 +12,12 @@ namespace EMTK {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Harmony), "UnpatchAll")]
         public static bool UnpatchAll(Harmony __instance, string harmonyID = null) {
+            if (harmonyID == null) ScreenManager.Platform.Logger.Warning(
+                "Harmony instance \"{0}\" attempted to run UnpatchAll() with no arguments. " +
+                "This normally unpatches all mods, including EMTK, instead of just the harmony instance itself. " +
+                "Please notify the mod author to use UnpatchAll(\"{0}\") instead.",
+                __instance.Id
+            );
             string id = harmonyID ?? __instance.Id;
             bool IDCheck(Patch patchInfo) => patchInfo.owner == id;
 
