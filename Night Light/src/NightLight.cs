@@ -44,16 +44,32 @@ namespace NightLight {
                 .WithAlias("light")
                 .BeginSubCommand("get")
                     .HandleWith(args => {
-                        return TextCommandResult.Success(Lang.Get("nightlight:Command.Get", NightLight.config.MinimumBrightnessPercent.ToString()));
+                        return TextCommandResult.Success(Lang.Get(
+                            "nightlight:Command.Get", (int)(config.MinimumBrightnessPercent * 100.0), config.MinimumBrightnessPercent
+                        ));
                     })
                 .EndSubCommand()
                 .BeginSubCommand("set")
-                    .WithArgs(parsers.Double("min brightness"))
+                    .WithArgs(parsers.All("brightness"))
                     .HandleWith(args => {
-                        config.MinimumBrightnessPercent = (double)args[0];
-                        api.StoreModConfig<NightLightConfig>(config, "nightlight.json");
-                        api.Shader.ReloadShaders();
-                        return TextCommandResult.Success(Lang.Get("nightlight:Command.Set", args[0].ToString()));
+                        try {
+                            string percentStr = ((string)args[0]).Trim();
+                            Console.WriteLine(percentStr);
+                            double percent = 0.0;
+                            if (percentStr[percentStr.Length-1] == '%') {
+                                percent = double.Parse(percentStr.Substring(0, percentStr.Length-1));
+                                percent /= 100.0;
+                            } else {
+                                percent = double.Parse(percentStr);
+                            }
+
+                            config.MinimumBrightnessPercent = percent;
+                            api.StoreModConfig<NightLightConfig>(config, "nightlight.json");
+                            api.Shader.ReloadShaders();
+                            return TextCommandResult.Success(Lang.Get("nightlight:Command.Set", (int)(percent * 100.0), percent));
+                        } catch (FormatException) {
+                            return TextCommandResult.Error(Lang.Get("nightlight:Command.Set.Fail"));
+                        }
                     })
                 .EndSubCommand();
             
