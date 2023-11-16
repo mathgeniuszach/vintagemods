@@ -1,11 +1,14 @@
 ﻿using System;
-
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using HarmonyLib;
 
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.Client.NoObf;
+using Vintagestory.Common;
 
 namespace NightLight {
 
@@ -19,6 +22,8 @@ namespace NightLight {
         public static NightLightConfig config;
         public static Harmony harmony;
 
+        public static CultureInfo culture = new CultureInfo("en-US");
+
         public override bool ShouldLoad(EnumAppSide side) {
             return side == EnumAppSide.Client;
         }
@@ -26,6 +31,7 @@ namespace NightLight {
         public override void StartClientSide(ICoreClientAPI api) {
             NightLight.api = api;
 
+            // Load config
             try {
                 config = api.LoadModConfig<NightLightConfig>("nightlight.json");
             } catch {
@@ -36,9 +42,11 @@ namespace NightLight {
                 api.StoreModConfig<NightLightConfig>(config, "nightlight.json");
             }
 
+            // Apply Harmony patches
             harmony = new Harmony("nightlight");
             harmony.PatchAll();
 
+            // Add nightlight command
             var parsers = api.ChatCommands.Parsers;
             api.ChatCommands.Create("nlight")
                 .WithAlias("light")
@@ -61,10 +69,12 @@ namespace NightLight {
                                 percent /= 100.0;
                             } else {
                                 percent = double.Parse(percentStr);
+                                if (percent > 1) percent /= 100.0;
                             }
+                            if (percent < 0.0 || percent > 1.0) throw new FormatException();
 
                             config.MinimumBrightnessPercent = percent;
-                            api.StoreModConfig<NightLightConfig>(config, "nightlight.json");
+                            api.StoreModConfig(config, "nightlight.json");
                             api.Shader.ReloadShaders();
                             return TextCommandResult.Success(Lang.Get("nightlight:Command.Set", (int)(percent * 100.0), percent));
                         } catch (FormatException) {
@@ -72,22 +82,42 @@ namespace NightLight {
                         }
                     })
                 .EndSubCommand();
-            
+
+            // Reload shaders to apply shader patches
             api.Shader.ReloadShaders();
         }
         
-        public override void Dispose() {
-            harmony.UnpatchAll("nightlight");
-            base.Dispose();
+        // public override void Dispose() {
+        //     harmony.UnpatchAll("nightlight");
+        //     base.Dispose();
+        // }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AssetManager), "Reload", typeof(AssetCategory))]
+        public static void PatchShaderAssets(AssetCategory category) {
+            if (category != AssetCategory.shaderincludes) return;
+
+            // Patch "fogandlight.vsh" for brightness
+            AssetLocation assetLoc = new AssetLocation("game", "shaderincludes/fogandlight.vsh");
+            Asset asset = (Asset)api.Assets.Get(assetLoc);
+
+            string shader = asset.ToText();
+            shader = Regex.Replace(
+                shader,
+                "(vec3 (?:block|sun)LightColor) = (.*?);",
+                "$1 = mix($2, vec3(1.0, 1.0, 1.0), MINIMUM_BRIGHTNESS_PERCENT + 0);"
+            );
+
+            asset.Data = Encoding.UTF8.GetBytes(shader);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ShaderRegistry), "registerDefaultShaderCodePrefixes")]
         public static void registerDefaultShaderCodePrefixes(ShaderProgram program) {
-            double mbp = NightLight.config?.MinimumBrightnessPercent ?? 0.1;
+            double mbp = config?.MinimumBrightnessPercent ?? 0.1;
 
             Shader vxs = program.VertexShader;
-            vxs.PrefixCode = vxs.PrefixCode + "#define MINIMUM_BRIGHTNESS_PERCENT " + mbp.ToString() + "\r\n";
+            vxs.PrefixCode = vxs.PrefixCode + "#define MINIMUM_BRIGHTNESS_PERCENT " + mbp.ToString(culture) + "\r\n";
         }
     }
 

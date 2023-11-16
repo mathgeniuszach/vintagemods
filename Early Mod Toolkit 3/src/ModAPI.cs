@@ -156,23 +156,27 @@ namespace EMTK {
                     modListCache = JsonConvert.DeserializeObject<APIStatusModList>(reader.ReadToEnd());
                     if (modListCache.statuscode == "200") {
                         foreach (APIModSummary summary in modListCache.mods) {
-                            if (summary?.modidstrs?.Length < 1 || summary?.type != "mod") continue;
+                            if (summary == null || summary?.modidstrs?.Length < 1 || summary?.type != "mod") continue;
 
                             string modid = summary.modidstrs[0].ToLower();
-                            modCells.Add(new CustomModCellEntry() {
-                                ModID = modid,
-                                Keywords = String.Join(" ", modid, summary?.name, summary?.author, summary?.tags).ToLower(),
-                                Summary = summary,
-                                Title = summary?.name,
-                                DetailText = String.Format("{0}\n{1} - {2}",
-                                    summary?.author,
-                                    char.ToUpper(summary.side[0]) + summary.side.Substring(1),
-                                    String.Join(", ", summary.tags)
-                                ),
-                                RightTopText = String.Format("{0} Downloads,\n{1} Follows, {2} Comments", summary?.downloads, summary?.follows, summary?.comments),
-                                // TitleFont = medFont,
-                                // DetailTextFont = smallFont,
-                            });
+                            try {
+                                modCells.Add(new CustomModCellEntry() {
+                                    ModID = modid,
+                                    Keywords = String.Join(" ", modid, summary?.name ?? "Unknown", summary?.author ?? "Unknown", summary?.tags ?? Array.Empty<string>()).ToLower(),
+                                    Summary = summary,
+                                    Title = summary?.name ?? "Unknown",
+                                    DetailText = String.Format("{0}\n{1} - {2}",
+                                        summary?.author ?? "Unknown",
+                                        summary?.side == null ? "" : char.ToUpper(summary.side[0]) + summary.side.Substring(1),
+                                        String.Join(", ", summary?.tags ?? Array.Empty<string>())
+                                    ),
+                                    RightTopText = String.Format("{0} Downloads,\n{1} Follows, {2} Comments", summary?.downloads ?? 0, summary?.follows ?? 0, summary?.comments ?? 0),
+                                    // TitleFont = medFont,
+                                    // DetailTextFont = smallFont,
+                                });
+                            } catch (Exception e) {
+                                return new APIStatusModList {statuscode = "412"};
+                            }
                             modListSummary[modid] = summary;
                         }
                     } else {
@@ -300,12 +304,19 @@ namespace EMTK {
     }
 
     public class CustomModCellEntry : ModCellEntry {
-        public static readonly DirectoryInfo TEMP_DIR = new DirectoryInfo(GamePaths.DataPathMods);
+        public static readonly DirectoryInfo TEMP_DIR;
         public static readonly MethodInfo modInfoSet = AccessTools.PropertySetter(typeof(ModContainer), "Info");
 
         public string ModID;
         public string Keywords;
         public APIModSummary Summary;
+
+        static CustomModCellEntry() {
+            if (!Directory.Exists(GamePaths.DataPathMods)) {
+                Directory.CreateDirectory(GamePaths.DataPathMods);
+            }
+            TEMP_DIR = new DirectoryInfo(GamePaths.DataPathMods);
+        }
 
         public CustomModCellEntry() {
             this.Mod = new ModContainer(TEMP_DIR, ScreenManager.Platform.Logger, false);

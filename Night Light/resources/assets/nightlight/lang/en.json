@@ -1,5 +1,5 @@
 {
     "Command.Get": "Current brightness value: {0}% ({1})",
     "Command.Set": "Set brightness value to: {0}% ({1})",
-    "Command.Set.Fail": "Invalid brightness value!"
+    "Command.Set.Fail": "Invalid brightness value! Must be in the range 0-1 or 0%-100%."
 }
