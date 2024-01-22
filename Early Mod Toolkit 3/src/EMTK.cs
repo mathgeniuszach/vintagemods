@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 
@@ -17,9 +16,6 @@ using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
 
 namespace EMTK {
-
-    // TODO: Dana wants load times
-
     public class EMTKConfig {
         private static EMTKConfig instance = null;
 

@@ -174,7 +174,7 @@ namespace EMTK {
                                     // TitleFont = medFont,
                                     // DetailTextFont = smallFont,
                                 });
-                            } catch (Exception e) {
+                            } catch (Exception) {
                                 return new APIStatusModList {statuscode = "412"};
                             }
                             modListSummary[modid] = summary;

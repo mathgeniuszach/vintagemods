@@ -215,7 +215,7 @@ namespace EMTK {
 		}
 
         public IGuiElementCell createCellElem(CustomModCellEntry cell, ElementBounds bounds) {
-			return new GuiElementModCell(this.ScreenManager.api, cell, bounds) {
+			return new GuiElementModCell(this.ScreenManager.api, cell, bounds, null) {
                 On = EMTK.loadedMods.ContainsKey(cell.ModID),
 				OnMouseDownOnCellLeft = new Action<int>(this.OnClickCellLeft),
 				OnMouseDownOnCellRight = new Action<int>(this.OnClickCellRight)

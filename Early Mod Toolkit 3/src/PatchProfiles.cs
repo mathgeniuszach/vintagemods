@@ -30,10 +30,10 @@ namespace EMTK {
                     CodeInstruction.Call(typeof(GuiElement), "scaled")
                 )
                 .End()
-                .MatchStartBackwards(new CodeMatch(instr => instr.opcode == OpCodes.Brfalse))
-                .Advance(-2)
-                .SetAndAdvance(OpCodes.Nop, null)
-                .SetAndAdvance(OpCodes.Ldc_I4_1, null)
+        //         .MatchStartBackwards(new CodeMatch(instr => instr.opcode == OpCodes.Brfalse))
+        //         .Advance(-2)
+        //         .SetAndAdvance(OpCodes.Nop, null)
+        //         .SetAndAdvance(OpCodes.Ldc_I4_1, null)
                 .InstructionEnumeration();
         }
 
