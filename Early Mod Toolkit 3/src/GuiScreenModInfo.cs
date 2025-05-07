@@ -62,7 +62,7 @@ namespace EMTK {
 
             Thread iconThread = new Thread(() => {
                 if (ModAPI.modListSummary.ContainsKey(this.modid) && ModAPI.modListSummary[this.modid].logo != null) {
-                    this.icon = ModAPI.GetImage("https://mods.vintagestory.at/"+ModAPI.modListSummary[this.modid].logo);
+                    this.icon = ModAPI.GetImage(ModAPI.modListSummary[this.modid].logo);
                 } else if (lmod != null) {
                     this.icon = lmod.Icon;
                 } else {
@@ -272,7 +272,7 @@ namespace EMTK {
             foreach (APIModRelease release in smod.mod.releases) {
                 if (release.modversion != selectedVersion) continue;
 
-                cfile = ModAPI.GetAsset("https://mods.vintagestory.at/"+release.mainfile);
+                cfile = ModAPI.GetAsset(release.mainfile);
                 filename = release.filename;
                 if (cfile == null) return true;
 
