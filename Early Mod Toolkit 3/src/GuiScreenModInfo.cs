@@ -240,7 +240,7 @@ namespace EMTK {
             if (mod != null) {
                 this.ElementComposer
                     .AddButton(
-                        "Open ModDB Page", () => {ScreenManager.api.Gui.OpenLink("https://mods.vintagestory.at/"+mod.urlalias); return true;},
+                        "Open ModDB Page", () => { ScreenManager.api.Gui.OpenLink("https://mods.vintagestory.at/" + (mod.urlalias ?? String.Format("show/mod/{0}", mod.assetid))); return true; },
                         ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                     );
             }
