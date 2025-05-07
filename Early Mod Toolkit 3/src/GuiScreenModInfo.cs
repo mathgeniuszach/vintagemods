@@ -244,7 +244,7 @@ namespace EMTK {
                         ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                     );
             }
-            if (lmod != null) {
+            if (lmod != null && !lmod.Info.CoreMod) {
                 this.ElementComposer
                     .AddButton(
                         "Uninstall", RemoveMod,
