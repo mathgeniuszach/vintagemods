@@ -320,7 +320,7 @@ namespace EMTK {
 
                 APIModRelease release = smod.mod.releases[0];
 
-                string cfile = ModAPI.GetAsset("https://mods.vintagestory.at/"+release.mainfile);
+                string cfile = ModAPI.GetAsset(release.mainfile);
                 if (cfile == null) return;
                 
                 File.Move(cfile, Path.Combine(GamePaths.DataPathMods, release.filename));

@@ -126,7 +126,7 @@ namespace EMTK {
 
                         // Download mod file
                         try {
-                            string fileloc = ModAPI.GetAsset("https://mods.vintagestory.at/" + tuple.Item1.mainfile, 3);
+                            string fileloc = ModAPI.GetAsset(tuple.Item1.mainfile, 3);
                             if (fileloc == null) failed.Add(tuple.Item1.modidstr);
 
                             // Delete old mod
