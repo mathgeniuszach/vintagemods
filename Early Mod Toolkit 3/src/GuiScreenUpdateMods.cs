@@ -197,10 +197,10 @@ namespace EMTK {
 
         public void invalidate() {
             if (base.IsOpened) {
-				InitGui();
-				return;
-			}
-			ScreenManager.GuiComposers.Dispose("mainmenu-browsemods");
+                InitGui();
+                return;
+            }
+            ScreenManager.GuiComposers.Dispose("mainmenu-browsemods");
         }
 	}
 }
