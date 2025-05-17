@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>3.2.0-beta.1</Version>
-    <OutputType>Exe</OutputType>
+    <Version>3.2.0-beta.2</Version>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8</TargetFramework>
   </PropertyGroup>
 
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <Target Name="Package" AfterTargets="PostBuildEvent">
-    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="bin/Debug/net8" Overwrite="true"/>
+    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="bin/$(Configuration)/$(TargetFramework)" Overwrite="true"/>
   </Target>
 
 </Project>
