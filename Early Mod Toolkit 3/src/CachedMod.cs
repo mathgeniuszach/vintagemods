@@ -21,7 +21,7 @@ namespace EMTK {
         public bool early = false;
         public EarlyModInfo emi;
 
-        public Type[] systems = Array.Empty<Type>();
+        public Type[] systems = [];
 
         public CachedMod(ModContainer mod) {
             this.mod = mod;
@@ -41,7 +41,7 @@ namespace EMTK {
                         } catch (Exception ex) {
                             ScreenManager.Platform.Logger.Error(
                                 "An exception was thrown trying to load the EarlyModInfo of \"{0}\":\n{1}",
-                                new object[] {mod.Info.ModID, ex}
+                                [mod.Info.ModID, ex]
                             );
                             emi = new EarlyModInfo();
                         }
@@ -59,7 +59,7 @@ namespace EMTK {
                     } catch (Exception ex) {
                         ScreenManager.Platform.Logger.Error(
                             "An exception was thrown trying to load the EarlyModInfo of \"{0}\":\n{1}",
-                            new object[] {mod.Info.ModID, ex}
+                            [mod.Info.ModID, ex]
                         );
                         emi = new EarlyModInfo();
                     }
@@ -84,13 +84,13 @@ namespace EMTK {
             if (mod.Assembly == null) return;
 
             try {
-                systems = Enumerable.Where<Type>(mod.Assembly.GetTypes(), (Type type) => typeof(ModSystem).IsAssignableFrom(type) && !type.IsAbstract).ToArray();
+                systems = [..Enumerable.Where(mod.Assembly.GetTypes(), type => typeof(ModSystem).IsAssignableFrom(type) && !type.IsAbstract)];
             } catch (Exception ex) {
-                ScreenManager.Platform.Logger.Error("EMTK: Exception thrown when obtaining assembly types of {0}: {1}, InnerException: {2}. Skipping Assembly", new object[] {
+                ScreenManager.Platform.Logger.Error("EMTK: Exception thrown when obtaining assembly types of {0}: {1}, InnerException: {2}. Skipping Assembly", [
                     mod.Assembly.FullName,
                     ex,
                     ex.InnerException
-                });
+                ]);
             }
         }
     }

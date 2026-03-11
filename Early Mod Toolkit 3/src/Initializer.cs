@@ -43,7 +43,7 @@ namespace EMTK {
             // Directory.SetCurrentDirectory(basepath);
 
             EMTK.version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
-            EMTK.version = EMTK.version.Substring(0, EMTK.version.LastIndexOf("."));
+            EMTK.version = EMTK.version[..EMTK.version.LastIndexOf(".")];
             EMTK.harmony = new Harmony("emtk");
             EMTK.harmony.PatchAll();
 
@@ -52,7 +52,7 @@ namespace EMTK {
             typeof(GamePaths).GetProperty("AssetsPath").GetSetMethod(true).Invoke(null, new[] {
                 Path.Combine(basepath, "assets")
             });
-            
+
             #endregion
             Console.WriteLine("EMTK: Patching complete!");
 
@@ -64,7 +64,7 @@ namespace EMTK {
             Console.WriteLine("EMTK: Searching ModDB for mods in another thread!");
             new Thread(() => {ModAPI.CheckEMTKUpdate();}).Start();
             new Thread(() => {ModAPI.GetMods();}).Start();
-			
+
 			ClientProgram.Main(rawArgs);
 
             Environment.Exit(0);
@@ -83,42 +83,46 @@ namespace EMTK {
 
                 string[] potentialPaths;
                 if (Path.DirectorySeparatorChar == '\\') {
-                    potentialPaths = new[] {
+                    potentialPaths = [
                         basedir,
                         Path.GetDirectoryName(basedir),
+                        Environment.GetEnvironmentVariable("VINTAGE_STORY"),
                         Path.Combine(appdata, "Vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Vintagestory"),
-                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Vintagestory")
-                    };
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Vintagestory"),
+                    ];
                 } else {
-                    potentialPaths = new[] {
+                    potentialPaths = [
                         basedir,
                         Path.GetDirectoryName(basedir),
+                        Environment.GetEnvironmentVariable("VINTAGE_STORY"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads/vintagestory"),
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ApplicationData/vintagestory"),
                         "/usr/share/vintagestory",
                         "/opt/vintagestory"
-                    };
+                    ];
                 }
 
                 foreach (string path in potentialPaths) {
                     if (File.Exists(Path.Combine(path, "VintagestoryLib.dll"))) {
-                        ASSEMBLY_PATHS = new[] {
+                        ASSEMBLY_PATHS = [
                             path,
                             Path.Combine(path, "Lib"),
                             Path.Combine(path, "Mods"),
                             Path.Combine(appdata, "VintagestoryData", "Mods")
-                        };
+                        ];
                         basepath = path;
                         break;
                     }
                 }
 
-                if (ASSEMBLY_PATHS == null) {string error =
+                if (ASSEMBLY_PATHS == null) {
+                    string error =
                         "Error; Vintagestory not found!\r\n" +
-                        "Make sure you're using the right .NET version (.NET4 or .NET7).\r\n" +
-                        "Otherwise, place the executable in the same folder where you installed Vintagestory, or " + 
-                        "install Vintagestory to one of \"%AppData%\\Vintagestory\", \"C:\\Program Files\\Vintagestory\", \"C:\\Program Files (x86)\\Vintagestory\" on Windows or /usr/share/vintagestory on Linux.";
+                        "Make sure you're using the right .NET version.\r\n" +
+                        "Otherwise, place the executable in the same folder where you installed Vintagestory, or " +
+                        "install Vintagestory to one of \"%AppData%\\Vintagestory\", \"C:\\Program Files\\Vintagestory\", " +
+                        "\"C:\\Program Files (x86)\\Vintagestory\" on Windows, or \"/usr/share/vintagestory\" or \"/opt/vintagestory\" on Linux.";
                     Console.WriteLine(error);
                     File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ERROR.txt"), error);
                     throw new Exception("Failed to locate vintagestory.");

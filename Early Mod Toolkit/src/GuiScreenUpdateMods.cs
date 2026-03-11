@@ -50,7 +50,7 @@ namespace EMTK {
                     ModID = modid,
                     Title = modid,
                     DetailText = ModAPI.latestReleaseCache[modid].filename,
-                    RightTopText = String.Format("{0} -> {1}", EMTK.loadedMods[modid].Info.Version, ModAPI.latestVersionCache[modid])
+                    RightTopText = string.Format("{0} -> {1}", EMTK.loadedMods[modid].Info.Version, ModAPI.latestVersionCache[modid])
                 });
             }
 			InitGui();
@@ -155,7 +155,7 @@ namespace EMTK {
             foreach (Thread t in threads) t.Join();
 
             EMTK.sm.LoadScreen(new GuiScreenInfo(
-                "Updated all mods." + (failed.IsEmpty ? "" : "\r\nThese mods failed the update: " + String.Join(", ", failed)),
+                "Updated all mods." + (failed.IsEmpty ? "" : "\r\nThese mods failed the update: " + string.Join(", ", failed)),
                 () => {
                     EMTK.sm.LoadScreen(parentScreen);
                     AccessTools.Method(typeof(GuiScreenMods), "OnReloadMods").Invoke(parentScreen, null);

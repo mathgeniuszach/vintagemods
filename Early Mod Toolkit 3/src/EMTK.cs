@@ -39,8 +39,8 @@ namespace EMTK {
             EarlyAPI.StoreModConfig(instance, "emtk.json");
         }
 
-        public HashSet<string> excludedFromUpdates = new HashSet<string>();
-        public HashSet<string> enabledEarlyMods = new HashSet<string>();
+        public HashSet<string> excludedFromUpdates = [];
+        public HashSet<string> enabledEarlyMods = [];
     }
 
     [HarmonyPatch]
@@ -51,11 +51,11 @@ namespace EMTK {
         public static volatile bool updateAvailable = false;
         public static string version;
         public static List<CachedMod> earlyModsCache;
-        public static List<CachedMod> newEarlyModsCache = new();
-        public static HashSet<string> earlyModsAvailable = new();
-        public static Dictionary<string, ModContainer> loadedMods = new();
+        public static List<CachedMod> newEarlyModsCache = [];
+        public static HashSet<string> earlyModsAvailable = [];
+        public static Dictionary<string, ModContainer> loadedMods = [];
 
-        public static Random rng = new Random();
+        public static Random rng = new();
 
         public static EMTKConfig Config {
             get {
@@ -75,9 +75,7 @@ namespace EMTK {
         }
 
         public static SemVer ParseVersion(string modid, string ver) {
-            SemVer version;
-            string error = null;
-            if (!SemVer.TryParse(ver, out version, out error) || error != null) {
+            if (!SemVer.TryParse(ver, out SemVer version, out string error) || error != null) {
                 ScreenManager.Platform.Logger.Warning("Dependency '{0}': {1} (best guess: {2})", modid, error, version);
             }
             return version;
@@ -147,7 +145,7 @@ namespace EMTK {
             mods.RemoveAll((m) => m.Status != ModStatus.Enabled);
 
             // Sort systems to execute them in a particular order
-            earlyModsCache = new List<CachedMod>(newEarlyModsCache);
+            earlyModsCache = [..newEarlyModsCache];
             earlyModsCache.Sort((a, b) => a.emi.LoadOrder.CompareTo(b.emi.LoadOrder));
 
             // Setup origin locations for preloading assets
@@ -188,13 +186,13 @@ namespace EMTK {
             foreach (var cmod in earlyModsCache) {
                 foreach (Type system in cmod.systems) {
                     try {
-                        system.GetMethod("EarlyLoad")?.Invoke(null, new object[] {cmod.mod, sm});
+                        system.GetMethod("EarlyLoad")?.Invoke(null, [cmod.mod, sm]);
                     } catch (Exception ex) {
-                        ScreenManager.Platform.Logger.Error("EMTK: Exception thrown when early loading {0}: {1}, InnerException: {2}.", new object[] {
+                        ScreenManager.Platform.Logger.Error("EMTK: Exception thrown when early loading {0}: {1}, InnerException: {2}.", [
                             cmod.mod.Assembly.FullName,
                             ex,
                             ex.InnerException
-                        });
+                        ]);
                     }
                 }
             }
@@ -214,11 +212,11 @@ namespace EMTK {
                     try {
                         system.GetMethod("EarlyUnload")?.Invoke(null, null);
                     } catch (Exception ex) {
-                        ScreenManager.Platform.Logger.Error("EMTK: Exception thrown when early unloading {0}: {1}, InnerException: {2}.", new object[] {
+                        ScreenManager.Platform.Logger.Error("EMTK: Exception thrown when early unloading {0}: {1}, InnerException: {2}.", [
                             cmod.mod.Assembly.FullName,
                             ex,
                             ex.InnerException
-                        });
+                        ]);
                     }
                 }
             }
@@ -247,7 +245,7 @@ namespace EMTK {
             // Save scroll location for later
             var scrn = curscrn.GetValue(sm);
             GuiScreenMods gsm = null;
-            if (scrn is GuiScreenMods) gsm = (GuiScreenMods) scrn;
+            if (scrn is GuiScreenMods mods) gsm = mods;
 
             float pos = gsm != null ? (float) handlepos.GetValue(gsm.ElementComposer.GetScrollbar("scrollbar")) : 0;
             // Reload the title screen
@@ -259,7 +257,7 @@ namespace EMTK {
             // Reload scroll location so it seems like nothing happened
             if (saveScroll && gsm != null) {
                 gsm = (GuiScreenMods) curscrn.GetValue(sm);
-                handlehandler.Invoke(gsm.ElementComposer.GetScrollbar("scrollbar"), new object[] {pos});
+                handlehandler.Invoke(gsm.ElementComposer.GetScrollbar("scrollbar"), [pos]);
             }
         }
 
@@ -292,7 +290,7 @@ namespace EMTK {
         // Some mods - and particularly assets - depend on each other to work properly.
         public static void FastEarlyReloadMods() {
             bool reloadTitle = false;
-            HashSet<string> reloaders = new();
+            HashSet<string> reloaders = [];
 
             foreach (CachedMod mod in earlyModsCache) {
                 if (mod.emi != null && mod.emi.ReloadTitle) {
@@ -307,14 +305,13 @@ namespace EMTK {
             foreach (CachedMod mod in earlyModsCache) {
                 if (mod.emi != null && mod.emi.ReloadTitle) {
                     string id = mod.mod.Info.ModID + "@" + mod.mod.Info.Version;
-                    if (reloaders.Contains(id)) {
-                        // Title screen mods that have not been disabled do not trigger a title screen reload.
-                        reloaders.Remove(id);
-                    } else {
+                    if (!reloaders.Contains(id)) {
                         // A new mod with title screen changes was found. We're gonna have to reload.
+                        // Title screen mods that have not been disabled do not trigger a title screen reload.
                         reloadTitle = true;
                         break;
                     }
+                    reloaders.Remove(id);
                 }
             }
 
@@ -324,8 +321,8 @@ namespace EMTK {
         public static void AddSomeExternalAssets(ILogger Logger, ModLoader modloader) {
             AssetManager asm = ScreenManager.Platform.AssetManager;
 
-            List<string> assetOriginsForLog = new();
-			List<IAssetOrigin> externalOrigins = new();
+            List<string> assetOriginsForLog = [];
+			List<IAssetOrigin> externalOrigins = [];
 
             foreach (KeyValuePair<string, IAssetOrigin> val in modloader.GetContentArchives()) {
                 asm.Origins.Add(val.Value);
@@ -339,7 +336,7 @@ namespace EMTK {
             }
 
 			if (assetOriginsForLog.Count > 0) {
-				Logger.Notification("EMTK: Early External Origins in load order: {0}", new object[] { string.Join(", ", assetOriginsForLog)});
+				Logger.Notification("EMTK: Early External Origins in load order: {0}", [string.Join(", ", assetOriginsForLog)]);
 			}
 
             FieldInfo assetsByCategory = AccessTools.Field(typeof(AssetManager), "assetsByCategory");
@@ -353,19 +350,18 @@ namespace EMTK {
             };
 
 			foreach (AssetCategory category in minCategories) {
-                var categoryassets = (Dictionary<AssetLocation, IAsset>)getAssetsDontLoad.Invoke(asm, new object[] {category, externalOrigins});
+                var categoryassets = (Dictionary<AssetLocation, IAsset>)getAssetsDontLoad.Invoke(asm, [category, externalOrigins]);
                 foreach (IAsset asset in categoryassets.Values) {
                     asm.Assets[asset.Location] = asset;
                 }
 
-                List<IAsset> list;
                 var abc = (IDictionary<string, List<IAsset>>)assetsByCategory.GetValue(asm);
-                if (!abc.TryGetValue(category.Code, out list)) {
-                    list = (abc[category.Code] = new List<IAsset>());
+                if (!abc.TryGetValue(category.Code, out List<IAsset> list)) {
+                    list = abc[category.Code] = [];
                 }
                 list.AddRange(categoryassets.Values);
 
-                Logger.Notification("EMTK: Found {1} external assets in category {0}", new object[] {category, categoryassets.Count});
+                Logger.Notification("EMTK: Found {1} external assets in category {0}", [category, categoryassets.Count]);
 			}
 			asm.allAssetsLoaded = true;
         }

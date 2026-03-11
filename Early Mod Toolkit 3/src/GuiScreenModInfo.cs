@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading;
 
 using HarmonyLib;
-using ProperVersion;
 
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -47,11 +46,11 @@ namespace EMTK {
             textUtil = this.ScreenManager.api.Gui.Text;
 
             InitMeta(modid, lmod);
-            
+
             // Build UI. Some parts are conditional on whether or not the mod is local or not
             InitGui();
-			screenManager.GamePlatform.WindowResized += (int w, int h) => {invalidate();};
-			ClientSettings.Inst.AddWatcher<float>("guiScale", (float s) => {invalidate();});
+			screenManager.GamePlatform.WindowResized += (w, h) => {Invalidate();};
+			ClientSettings.Inst.AddWatcher<float>("guiScale", s => { Invalidate();});
 		}
 
         public void InitMeta(string modid, ModContainer lmod) {
@@ -60,16 +59,16 @@ namespace EMTK {
 
             while (!ModAPI.modsQueryFinished) Thread.Sleep(100);
 
-            Thread iconThread = new Thread(() => {
-                if (ModAPI.modListSummary.ContainsKey(this.modid) && ModAPI.modListSummary[this.modid].logo != null) {
-                    this.icon = ModAPI.GetImage(ModAPI.modListSummary[this.modid].logo);
+            Thread iconThread = new(() => {
+                if (ModAPI.modListSummary.TryGetValue(this.modid, out APIModSummary summary) && summary.logo != null) {
+                    this.icon = ModAPI.GetImage(summary.logo);
                 } else if (lmod != null) {
                     this.icon = lmod.Icon;
                 } else {
                     this.icon = (BitmapExternal)ScreenManager.Platform.CreateBitmapFromPng(EMTK.sm.api.Assets.Get("game:textures/gui/3rdpartymodicon.png"));
                 }
             });
-            Thread modAPIThread = new Thread(() => {
+            Thread modAPIThread = new(() => {
                 this.smod = ModAPI.GetMod(modid);
             });
 
@@ -88,7 +87,7 @@ namespace EMTK {
                 // Therefore, we have absolutely no clue what the mod is, other than its modid.
                 // So we build a placeholder ui, with an error code and the mod id.
 
-                string message = 
+                string message =
                     smod.statuscode == "404"
                         ? "No mod with id \"" + modid + "\" exists..."
                         : "Can't get mod with id \"" + modid + "\"; " + "Error " + smod.statuscode;
@@ -129,12 +128,12 @@ namespace EMTK {
             string authors =
                 mod != null && (lmod == null || lmod.Info == null || lmod.Info.Authors.Count <= 1)
                     ? mod.author
-                    : String.Join(", ", lmod.Info.Authors);
-            // string authors = lmod != null ? String.Join(", ", lmod.Info.Authors) : mod.author;
+                    : string.Join(", ", lmod.Info.Authors);
+            // string authors = lmod != null ? string.Join(", ", lmod.Info.Authors) : mod.author;
 
             string side =
                 mod != null
-                    ? char.ToUpper(mod.side[0]) + mod.side.Substring(1)
+                    ? char.ToUpper(mod.side[0]) + mod.side[1..]
                     : (lmod.Info.Side.IsClient() ? "Client" : lmod.Info.Side.IsServer() ? "Server" : lmod.Info.Side.IsUniversal() ? "Both" : "Unknown");
 
             string desc = mod?.text ?? lmod?.Info?.Description ?? "";
@@ -142,16 +141,16 @@ namespace EMTK {
             this.ElementComposer = base.dialogBase("mainmenu-modinfo", -1.0, -1.0)
                 .AddStaticText(title, titleFont, EnumTextOrientation.Center, ElementBoundsPlus.Dynamic(pwidth: 1.0, height: 30.0))
                 .AddStaticText(authors, smallFont, EnumTextOrientation.Center, ElementBoundsPlus.Dynamic(pwidth: 1.0, height: 20.0, y: 40.0));
-            
+
             // this.ElementComposer.GetScrollbar("scrollbar").SetHeights((float)this.clippingBounds.fixedHeight, (float)this.listBounds.fixedHeight);
-            
+
             if (mod != null) {
                 this.ElementComposer
                     .AddStaticText(mod.downloads.ToString(), smallFont, EnumTextOrientation.Right, ElementBounds.Fixed(EnumDialogArea.RightTop, -25.0, 8.0, 300.0, 20.0))
                     .AddRichtext("<icon name=move>", smallFont, ElementBounds.Fixed(EnumDialogArea.RightTop, 0.0, 12.0, 20.0, 20.0))
                     .AddStaticText(mod.follows.ToString(), smallFont, EnumTextOrientation.Right, ElementBounds.Fixed(EnumDialogArea.RightTop, -25.0, 33.0, 300.0, 20.0))
                     .AddRichtext("<icon name=wpStar2>", smallFont, ElementBounds.Fixed(EnumDialogArea.RightTop, 0.0, 37.0, 20.0, 20.0));
-                
+
                 if (mod.releases != null && mod.releases.Length > 0) {
                     var versions = mod.releases
                         .Where(release => release?.modversion != null)
@@ -177,7 +176,7 @@ namespace EMTK {
                     ElementStdBounds.VerticalScrollbar(ElementBounds.Fixed(20.0, 80.0, box.Width-50.0, box.Height-135.0)), "scrollbar")
                 .BeginClip(ElementBoundsPlus.Dynamic(-60.0, -135.0, 1.0, 1.0, 20.0, 80.0))
                 .BeginChildElements(childElementBounds);
-            
+
             if (this.icon != null) {
                 // Make sure the icon is sized to have a height less than or equal to 200 and a width less than half the inner box - 5
                 double sizeRatio = Math.Min(200.0 / (double)this.icon.Height, ((box.Width-100.0) / 2.0) / (double)this.icon.Width);
@@ -187,17 +186,17 @@ namespace EMTK {
             } else {
                 iconSize = new Size2i(200, 200);
             }
-            
+
             var fields = new Dictionary<string, string>() {
                 {"ModID", modid},
                 {"Side", side},
             };
             if (lmod != null) {
                 fields.Add("Type", lmod.Info.Type.ToString());
-                if (lmod?.Info?.Dependencies?.Count != null && lmod.Info.Dependencies.Count > 0) fields.Add("Requires", String.Join(", ", lmod.Info.Dependencies));
+                if (lmod?.Info?.Dependencies?.Count != null && lmod.Info.Dependencies.Count > 0) fields.Add("Requires", string.Join(", ", lmod.Info.Dependencies));
             }
             if (mod != null) {
-                fields.Add("Tags", String.Join(", ", mod.tags));
+                fields.Add("Tags", string.Join(", ", mod.tags));
                 fields.Add("Created", mod.created.ToLocalTime().ToString("yyyy MMM d, h:mm tt"));
 
                 var lmt = latestRelease != null ? latestRelease.created : mod.lastmodified;
@@ -215,7 +214,7 @@ namespace EMTK {
                     .AddRichtext(
                         kvp.Value, smallFont,
                         ElementBounds.Fixed((box.Width-60.0)/2.0+80.0, h, (box.Width-60.0)/2.0-80.0, 300.0));
-                
+
                 h += textUtil.GetMultilineTextHeight(smallFont, kvp.Value, GuiElement.scaled(rwidth), EnumLinebreakBehavior.Default) / (double)RuntimeEnv.GUIScale;
             }
             h = Math.Max(h, 20.0 + iconSize.Height);
@@ -236,11 +235,11 @@ namespace EMTK {
                     Lang.Get("Back"), () => {EMTK.sm.LoadScreen(parentScreen); return true;},
                     ElementBounds.Fixed(EnumDialogArea.RightBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                 );
-            
+
             if (mod != null) {
                 this.ElementComposer
                     .AddButton(
-                        "Open ModDB Page", () => { ScreenManager.api.Gui.OpenLink("https://mods.vintagestory.at/" + (mod.urlalias ?? String.Format("show/mod/{0}", mod.assetid))); return true; },
+                        "Open ModDB Page", () => { ScreenManager.api.Gui.OpenLink("https://mods.vintagestory.at/" + (mod.urlalias ?? string.Format("show/mod/{0}", mod.assetid))); return true; },
                         ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                     );
             }
@@ -252,7 +251,7 @@ namespace EMTK {
                     );
             }
 
-            
+
             this.ElementComposer.Compose();
 
             this.ElementComposer.GetScrollbar("scrollbar").SetHeights(
@@ -309,11 +308,11 @@ namespace EMTK {
                 if (parentScreen is GuiScreenMods) {
                     invalidateParentScreen.Invoke(parentScreen, null);
                 }
-                invalidate();
+                Invalidate();
             } catch (Exception ex) {
                 ScreenManager.Platform.Logger.Error("Could not install {0}@{1}: {2}", modid, selectedVersion, ex);
 
-                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format("Could not install {0}@{1}. Check the log for more info.", modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
+                EMTK.sm.LoadScreen(new GuiScreenInfo(string.Format("Could not install {0}@{1}. Check the log for more info.", modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
             }
             return true;
         }
@@ -344,7 +343,7 @@ namespace EMTK {
                 string message = lmod?.SourcePath?.EndsWith(".dll") == true
                     ? "Could not uninstall {0}. Note that Vintage Story has some issues deleting dlls on Windows, which likely has occurred here."
                     : "Could not uninstall {0}. Check the log for more info.";
-                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
+                EMTK.sm.LoadScreen(new GuiScreenInfo(string.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
             }
 
             return true;
@@ -354,7 +353,7 @@ namespace EMTK {
             surface.Image(icon, 0, 0, iconSize.Width, iconSize.Height);
         }
 
-		public void invalidate() {
+		public void Invalidate() {
 			if (base.IsOpened) {
 				InitGui();
 				return;

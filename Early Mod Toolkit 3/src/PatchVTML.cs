@@ -45,11 +45,10 @@ namespace EMTK {
                 } else {
                     VtmlTagToken tval = (VtmlTagToken) val;
                     if (tval.Name == "img") {
-                        if (tval.Attributes.ContainsKey("alt")) {
-                            text += tval.Attributes["alt"];
-                        } else if (tval.Attributes.ContainsKey("src")) {
-                            string src = tval.Attributes["src"];
-                            text += src.Contains("/") ? src.Substring(src.LastIndexOf("/")+1) : src;
+                        if (tval.Attributes.TryGetValue("alt", out string altText)) {
+                            text += altText;
+                        } else if (tval.Attributes.TryGetValue("src", out string srcText)) {;
+                            text += srcText.Contains('/') ? srcText[(srcText.LastIndexOf('/') + 1)..] : srcText;
                         } else {
                             text += "Image";
                         }
@@ -59,22 +58,21 @@ namespace EMTK {
                     }
                 }
             }
-            __result = replaceText(text);
+            __result = ReplaceText(text);
             return false;
         }
 
         public static void RichtextifyWrap(ref RichTextComponentBase[] __result) {
             if (!cleanText) return;
 
-            List<RichTextComponentBase> texts = new List<RichTextComponentBase>(__result);
+            List<RichTextComponentBase> texts = [..__result];
             int n = 0;
 
             int newlineCount = 0;
             bool prevIsList = false;
-            int tempInt = 0;
 
             while (n < texts.Count) {
-                if (!(texts[n] is RichTextComponent)) {
+                if (texts[n] is not RichTextComponent) {
                     newlineCount = 0;
                     prevIsList = false;
                     n++;
@@ -103,74 +101,72 @@ namespace EMTK {
                     continue;
                 }
                 
-                string ttext = text.Substring(1).TrimStart();
+                string ttext = text[1..].TrimStart();
                 prevIsList = (
                     ttext == "-" ||
                     ttext.Length > 1 &&
-                    ttext.Substring(ttext.Length-1) == "." &&
-                    int.TryParse(ttext.Substring(0, ttext.Length-1), out tempInt)
+                    ttext[^1..] == "." &&
+                    int.TryParse(ttext.AsSpan(0, ttext.Length-1), out _)
                 );
             }
 
-            __result = texts.ToArray();
+            __result = [..texts];
             cleanText = false;
         }
 
         public static bool Richtextify(ICoreClientAPI capi, VtmlToken token, ref List<RichTextComponentBase> elems, Stack<CairoFont> fontStack, Action<LinkTextComponent> didClickLink) {
-            if (token is VtmlTagToken) {
-                VtmlTagToken tagToken = (VtmlTagToken) token;
+            if (token is VtmlTagToken tagToken) {
                 CairoFont font;
 
                 switch (tagToken.Name) {
                     case "a":
-                        LinkTextComponent cmp = new LinkTextComponent(capi, tagToken.ContentText, fontStack.Peek(), didClickLink);
+                        LinkTextComponent cmp = new(capi, tagToken.ContentText, fontStack.Peek(), didClickLink);
                         cmp.PaddingRight += 2.0;
                         tagToken.Attributes.TryGetValue("href", out cmp.Href);
                         elems.Add(cmp);
                         return false;
                     case "span":
 						foreach (VtmlToken v in tagToken.ChildElements) {
-                            richtextify.Invoke(null, new object[] {capi, v, elems, fontStack, didClickLink});
+                            richtextify.Invoke(null, [capi, v, elems, fontStack, didClickLink]);
 						}
                         return false;
                     case "p": case "div":
 						foreach (VtmlToken v in tagToken.ChildElements) {
-                            richtextify.Invoke(null, new object[] {capi, v, elems, fontStack, didClickLink});
+                            richtextify.Invoke(null, [capi, v, elems, fontStack, didClickLink]);
 						}
-                        addNewline(capi, ref elems, fontStack.Peek());
+                        AddNewline(capi, ref elems, fontStack.Peek());
                         return false;
                     case "h1": case "h2": case "h3": case "h4": case "h5": case "h6":
                         font = fontStack.Peek().Clone().WithFontSize(20.0f + ('6' - tagToken.Name[1])*3.0f);
 						font.FontWeight = Cairo.FontWeight.Bold;
 						fontStack.Push(font);
 						foreach (VtmlToken v in tagToken.ChildElements) {
-							richtextify.Invoke(null, new object[] {capi, v, elems, fontStack, didClickLink});
+							richtextify.Invoke(null, [capi, v, elems, fontStack, didClickLink]);
 						}
                         fontStack.Pop();
-                        addNewline(capi, ref elems, fontStack.Peek());
+                        AddNewline(capi, ref elems, fontStack.Peek());
                         return false;
                     case "em":
                         font = fontStack.Peek().Clone();
 						font.Slant = Cairo.FontSlant.Italic;
 						fontStack.Push(font);
 						foreach (VtmlToken v in tagToken.ChildElements) {
-							richtextify.Invoke(null, new object[] {capi, v, elems, fontStack, didClickLink});
+							richtextify.Invoke(null, [capi, v, elems, fontStack, didClickLink]);
 						}
 						fontStack.Pop();
                         return false;
                     case "ul":
                         listLevel++;
                         foreach (VtmlToken v in tagToken.ChildElements) {
-                            if (v is VtmlTagToken && ((VtmlTagToken) v).Name == "li") {
-                                VtmlTagToken vtagToken = (VtmlTagToken) v;
+                            if (v is VtmlTagToken vtagToken && vtagToken.Name == "li") {
                                 // This is the only way I could find to render the space correctly
-                                var x = new RichTextComponent(capi, "| " + String.Join("", Enumerable.Repeat("      ", listLevel-1)) + "- ", fontStack.Peek());
+                                var x = new RichTextComponent(capi, "| " + string.Join("", Enumerable.Repeat("      ", listLevel-1)) + "- ", fontStack.Peek());
                                 elems.Add(x);
                                 elems.Add(new RichTextComponent(capi, " ", fontStack.Peek()));
                                 foreach (VtmlToken vi in vtagToken.ChildElements) {
-                                    richtextify.Invoke(null, new object[] {capi, vi, elems, fontStack, didClickLink});
+                                    richtextify.Invoke(null, [capi, vi, elems, fontStack, didClickLink]);
                                 }
-                                addNewline(capi, ref elems, fontStack.Peek());
+                                AddNewline(capi, ref elems, fontStack.Peek());
                             }
                         }
                         if (listLevel > 1) {
@@ -183,17 +179,16 @@ namespace EMTK {
                         listLevel++;
                         int n = 0;
                         foreach (VtmlToken v in tagToken.ChildElements) {
-                            if (v is VtmlTagToken && ((VtmlTagToken) v).Name == "li") {
-                                VtmlTagToken vtagToken = (VtmlTagToken) v;
+                            if (v is VtmlTagToken vtagToken && vtagToken.Name == "li") {
                                 // This is the only way I could find to render the space correctly
                                 elems.Add(
-                                    new RichTextComponent(capi, "│ " + String.Join("", Enumerable.Repeat("      ", listLevel-1)) + ++n + ". ", fontStack.Peek())
+                                    new RichTextComponent(capi, "│ " + string.Join("", Enumerable.Repeat("      ", listLevel-1)) + ++n + ". ", fontStack.Peek())
                                 );
                                 elems.Add(new RichTextComponent(capi, " ", fontStack.Peek()));
                                 foreach (VtmlToken vi in vtagToken.ChildElements) {
-                                    richtextify.Invoke(null, new object[] {capi, vi, elems, fontStack, didClickLink});
+                                    richtextify.Invoke(null, [capi, vi, elems, fontStack, didClickLink]);
                                 }
-                                addNewline(capi, ref elems, fontStack.Peek());
+                                AddNewline(capi, ref elems, fontStack.Peek());
                             }
                         }
                         if (listLevel > 1) {
@@ -204,11 +199,10 @@ namespace EMTK {
                         return false;
                     case "img":
                         string text;
-                        if (tagToken.Attributes.ContainsKey("alt")) {
-                            text = tagToken.Attributes["alt"];
-                        } else if (tagToken.Attributes.ContainsKey("src")) {
-                            string src = tagToken.Attributes["src"];
-                            text = src.Contains("/") ? src.Substring(src.LastIndexOf("/")+1) : src;
+                        if (tagToken.Attributes.TryGetValue("alt", out string altText)) {
+                            text = altText;
+                        } else if (tagToken.Attributes.TryGetValue("src", out string srcText)) {
+                            text = srcText.Contains('/') ? srcText[(srcText.LastIndexOf('/') + 1)..] : srcText;
                         } else {
                             text = "Image";
                         }
@@ -217,13 +211,12 @@ namespace EMTK {
                         return false;
                     case "table":
                         foreach (VtmlToken root in tagToken.ChildElements) {
-                            if (root is VtmlTagToken) {
-                                VtmlTagToken tagRoot = (VtmlTagToken) root;
+                            if (root is VtmlTagToken tagRoot) {
                                 if (tagRoot.Name == "tbody") {
-                                    renderTable(capi, tagRoot, ref elems, fontStack, didClickLink);
+                                    RenderTable(capi, tagRoot, ref elems, fontStack, didClickLink);
                                     break;
                                 } else if (tagRoot.Name == "th" || tagRoot.Name == "tr") {
-                                    renderTable(capi, tagToken, ref elems, fontStack, didClickLink);
+                                    RenderTable(capi, tagToken, ref elems, fontStack, didClickLink);
                                     break;
                                 }
                             }
@@ -235,13 +228,13 @@ namespace EMTK {
             } else {
                 VtmlTextToken textToken = (VtmlTextToken) token;
                 if (!cleanText || textToken.Text.Trim(' ').Length > 0) {
-                    elems.Add(new RichTextComponent(capi, replaceText(textToken.Text), fontStack.Peek()));
+                    elems.Add(new RichTextComponent(capi, ReplaceText(textToken.Text), fontStack.Peek()));
                 }
                 return false;
             }
         }
 
-        public static string replaceText(string text) {
+        public static string ReplaceText(string text) {
             return text
                 .Replace("&nbsp;", " ")
                 .Replace("&amp;", "&")
@@ -250,40 +243,39 @@ namespace EMTK {
                 .Replace("&gt;", ">");
         }
 
-        public static void addNewline(ICoreClientAPI capi, ref List<RichTextComponentBase> elems, CairoFont font) {
+        public static void AddNewline(ICoreClientAPI capi, ref List<RichTextComponentBase> elems, CairoFont font) {
             if (ignoreNewlines > 0) {
                 ignoreNewlines--;
-            } else if (elems.Count > 0 && !(elems[elems.Count-1] is RichTextComponent && ((RichTextComponent)elems[elems.Count-1]).DisplayText.EndsWith("\r\n"))) {
+            } else if (elems.Count > 0 && !(elems[^1] is RichTextComponent component && component.DisplayText.EndsWith("\r\n"))) {
                 elems.Add(new RichTextComponent(capi, "\r\n", font));
             }
         }
 
-        public static void renderTable(ICoreClientAPI capi, VtmlTagToken tagToken, ref List<RichTextComponentBase> elems, Stack<CairoFont> fontStack, Action<LinkTextComponent> didClickLink) {
-            List<List<string>> textTable = new List<List<string>>();
+        public static void RenderTable(ICoreClientAPI capi, VtmlTagToken tagToken, ref List<RichTextComponentBase> elems, Stack<CairoFont> fontStack, Action<LinkTextComponent> didClickLink) {
+            List<List<string>> textTable = [];
             List<string> textRow;
 
-            int span = 0;
+            int span;
 
             // Get text in the table
             foreach (VtmlToken row in tagToken.ChildElements) {
-                if (!(row is VtmlTagToken)) continue;
+                if (row is not VtmlTagToken) continue;
                 VtmlTagToken tagRow = (VtmlTagToken) row;
                 if (tagRow.Name == "tr") {
-                    textRow = new List<string>();
+                    textRow = [];
                     foreach (VtmlToken col in tagRow.ChildElements) {
-                        if (col is VtmlTagToken) {
-                            VtmlTagToken tagCol = (VtmlTagToken) col;
+                        if (col is VtmlTagToken tagCol) {
                             if (tagCol.Name == "td" || tagCol.Name == "th") {
                                 textRow.Add(tagCol.ContentText);
-                                if (tagCol.Attributes.ContainsKey("colspan") && int.TryParse(tagCol.Attributes["colspan"], out span) && span > 1) {
+                                if (tagCol.Attributes.TryGetValue("colspan", out string colspan) && int.TryParse(colspan, out span) && span > 1) {
                                     for (int i = 0; i < span - 1; i++) textRow.Add("<<");
                                 }
                             }
                         }
                     }
                     textTable.Add(textRow);
-                    if (tagRow.Attributes.ContainsKey("rowspan") && int.TryParse(tagRow.Attributes["rowspan"], out span) && span > 1) {
-                        List<string> spanrow = new List<string>();
+                    if (tagRow.Attributes.TryGetValue("rowspan", out string rowspan) && int.TryParse(rowspan, out span) && span > 1) {
+                        List<string> spanrow = [];
                         for (int i = 0; i < textRow.Count; i++) spanrow.Add("^^");
                         for (int i = 0; i < span - 1; i++) textTable.Add(spanrow);
                     }
@@ -332,7 +324,7 @@ namespace EMTK {
             }
 
             // Render table
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             // Top row
             sb.Append("┌─");
@@ -371,10 +363,10 @@ namespace EMTK {
                             if (s <= 0) s = text.LastIndexOf(' ', m);
                             if (s <= 0) s = m;
 
-                            overflow.Add(text.Substring(s).Trim());
+                            overflow.Add(text[s..].Trim());
                             overflowed = true;
 
-                            text = text.Substring(0, s).Trim();
+                            text = text[..s].Trim();
                             sb.Append(text);
                             sb.Append(' ', Math.Max(cols[col] - text.Length, 0));
                         }
@@ -406,7 +398,7 @@ namespace EMTK {
             }
 
             sb.Append("\t\r\n");
-            elems.Add(new RichTextComponent(capi, sb.ToString(), new CairoFont(16.0, "Consolas", new[] {1.0, 1.0, 1.0, 1.0}, null).WithLineHeightMultiplier(0.9)));
+            elems.Add(new RichTextComponent(capi, sb.ToString(), new CairoFont(16.0, "Consolas", [1.0, 1.0, 1.0, 1.0], null).WithLineHeightMultiplier(0.9)));
         }
     }
 }

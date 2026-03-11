@@ -16,7 +16,7 @@ namespace EMTK {
     [HarmonyPatch]
     public static class PatchProfiles {
         public static GuiScreenMods gsm;
-        public static List<string> profiles = new List<string>();
+        public static List<string> profiles = [];
         public static string activeProfile;
 
         [HarmonyTranspiler]
@@ -90,7 +90,7 @@ namespace EMTK {
                 .RemoveInstruction()
                 .InsertAndAdvance(
                     new CodeInstruction(OpCodes.Ldarg_0),
-                    CodeInstruction.Call(typeof(PatchProfiles), "modModScreen"),
+                    CodeInstruction.Call(typeof(PatchProfiles), "ModModScreen"),
                     new CodeInstruction(OpCodes.Ldstr, "")
                 )
                 .MatchStartForward(new CodeMatch(OpCodes.Ldc_R8, -150.0))
@@ -98,7 +98,7 @@ namespace EMTK {
                 .InstructionEnumeration();
         }
 
-        public static GuiComposer modModScreen(GuiComposer composer, GuiScreenMods gui) {
+        public static GuiComposer ModModScreen(GuiComposer composer, GuiScreenMods gui) {
             gsm = gui;
             if (!Directory.Exists(Initializer.modProfilePath)) Directory.CreateDirectory(Initializer.modProfilePath);
 
@@ -116,7 +116,7 @@ namespace EMTK {
             }
             profiles.Sort();
 
-            string[] names = profiles.ToArray();
+            string[] names = [..profiles];
 
             CairoFont smallFont = CairoFont.WhiteSmallText();
 
@@ -126,46 +126,46 @@ namespace EMTK {
                 ElementBounds.Fixed(EnumDialogArea.LeftTop, 0.0, 0.0, 690.0, 0.0),
                 null
             // ).AddIconButton(
-            //     "copy", copyModProfile,
+            //     "copy", CopyModProfile,
             //     ElementBounds.Fixed(EnumDialogArea.RightTop, -451.0, -1.0, 30.0, 30.0)
             // ).AddIconButton(
-            //     "import", pasteModProfile,
+            //     "import", PasteModProfile,
             //     ElementBounds.Fixed(EnumDialogArea.RightTop, -421.0, -1.0, 30.0, 30.0)
             ).AddIconButton(
-                "plus", addModProfile,
+                "plus", AddModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -381.0, -1.0, 30.0, 30.0)
             ).AddAutoSizeHoverText(
                 Lang.Get("Adds a blank new mod profile."), smallFont, 170, ElementBounds.Fixed(EnumDialogArea.RightTop, -381.0, -1.0, 30.0, 30.0)
             ).AddIconButton(
-                "eraser", deleteModProfile,
+                "eraser", DeleteModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -351.0, -1.0, 30.0, 30.0)
             ).AddAutoSizeHoverText(
                 Lang.Get("Deletes the current mod profile."), smallFont, 170, ElementBounds.Fixed(EnumDialogArea.RightTop, -351.0, -1.0, 30.0, 30.0)
             ).AddIconButton(
-                "paintbrush", renameModProfile,
+                "paintbrush", RenameModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -321.0, -1.0, 30.0, 30.0)
             ).AddAutoSizeHoverText(
                 Lang.Get("Renames the current mod profile."), smallFont, 170, ElementBounds.Fixed(EnumDialogArea.RightTop, -321.0, -1.0, 30.0, 30.0)
             ).AddDropDown(
-                names, names, profiles.BinarySearch(activeProfile), changeModProfile,
+                names, names, profiles.BinarySearch(activeProfile), ChangeModProfile,
                 ElementBounds.Fixed(EnumDialogArea.RightTop, -16.0, 0.0, 300.0, 30.0)
             ).AddSmallButton(
-                Lang.Get("Browse..."), browseMods,
+                Lang.Get("Browse..."), BrowseMods,
                 ElementBounds.Fixed(EnumDialogArea.RightBottom, -417.0, 12.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
             ).AddSmallButton(
-                Lang.Get("Update All"), updateMods,
+                Lang.Get("Update All"), UpdateMods,
                 ElementBounds.Fixed(EnumDialogArea.RightBottom, -310.0, 12.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
             );
 
             return composer;
         }
 
-        public static bool browseMods() {
+        public static bool BrowseMods() {
             EMTK.sm.LoadScreen(new GuiScreenBrowseMods(EMTK.sm, gsm));
             return true;
         }
 
-        public static bool updateMods() {
+        public static bool UpdateMods() {
             List<ModContainer> mods = (List<ModContainer>) AccessTools.Field(typeof(ScreenManager), "allMods").GetValue(EMTK.sm);
             List<string> modUpdates = ModAPI.GetUpdates(mods);
 
@@ -180,7 +180,7 @@ namespace EMTK {
             return true;
         }
 
-        public static string cleanName(string value) {
+        public static string CleanName(string value) {
             string nvalue = value;
 
             // Remove illegal characters in a filename
@@ -194,57 +194,57 @@ namespace EMTK {
             return nvalue;
         }
 
-        public static void copyModProfile(bool obj) {
-            // Not implemented on linux I guess? Oh well, screw you I guess.
-            EMTK.sm.api.Input.ClipboardText = String.Join(", ", EMTK.loadedMods
+        public static void CopyModProfile(bool obj) {
+            // Not implemented on linux I guess? Oh well.
+            EMTK.sm.api.Input.ClipboardText = string.Join(", ", EMTK.loadedMods
                 .Where(mod => mod.Value?.Info?.Version != null)
                 .Select(mod => {
                     return mod.Key + "@" + mod.Value.Info.Version.ToString();
                 }));
         }
-        public static void pasteModProfile(bool obj) {}
+        public static void PasteModProfile(bool obj) {}
         
-        public static void renameModProfile(bool obj) {
+        public static void RenameModProfile(bool obj) {
             EMTK.sm.LoadScreen(new GuiScreenEntry(
-                activeProfile, new Action<bool, string>(renameFinished), EMTK.sm, gsm
+                activeProfile, new Action<bool, string>(RenameFinished), EMTK.sm, gsm
             ));
         }
-        public static void renameFinished(bool confirmed, string value) {
+        public static void RenameFinished(bool confirmed, string value) {
             EMTK.sm.LoadScreen(gsm);
             if (!confirmed) return;
 
-            string nvalue = cleanName(value);
+            string nvalue = CleanName(value);
             File.WriteAllText(Initializer.activeModProfilePath, nvalue);
 
             // FIXME: Overkill, reload not required here, the gui just needs to be reloaded
             AccessTools.Method(typeof(GuiScreenMods), "OnReloadMods").Invoke(gsm, null);
         }
 
-        public static void addModProfile(bool obj) {
+        public static void AddModProfile(bool obj) {
             EMTK.sm.LoadScreen(new GuiScreenEntry(
-                "", new Action<bool, string>(addFinished), EMTK.sm, gsm
+                "", new Action<bool, string>(AddFinished), EMTK.sm, gsm
             ));
         }
-        public static void addFinished(bool confirmed, string value) {
+        public static void AddFinished(bool confirmed, string value) {
             EMTK.sm.LoadScreen(gsm);
             if (!confirmed) return;
 
-            string nvalue = cleanName(value);
+            string nvalue = CleanName(value);
             Directory.CreateDirectory(Path.Combine(Initializer.modProfilePath, nvalue));
 
-            changeModProfile(nvalue, true);
+            ChangeModProfile(nvalue, true);
         }
 
-        public static void deleteModProfile(bool obj) {
+        public static void DeleteModProfile(bool obj) {
             EMTK.sm.LoadScreen((GuiScreen)Activator.CreateInstance(
                 AccessTools.TypeByName("GuiScreenConfirmAction"),
-                new object[] {
+                [
                     Lang.Get("Delete") + " '" + activeProfile + "'?",
-                    new Action<bool>(deleteFinished), EMTK.sm, gsm, false
-                }
+                    new Action<bool>(DeleteFinished), EMTK.sm, gsm, false
+                ]
             ));
         }
-        public static void deleteFinished(bool confirmed) {
+        public static void DeleteFinished(bool confirmed) {
             EMTK.sm.LoadScreen(gsm);
             if (!confirmed) return;
 
@@ -273,7 +273,7 @@ namespace EMTK {
             AccessTools.Method(typeof(GuiScreenMods), "OnReloadMods").Invoke(gsm, null);
         }
 
-        public static void changeModProfile(string code, bool selected) {
+        public static void ChangeModProfile(string code, bool selected) {
             // Don't do anything if we didn't really change the profile
             if (code == activeProfile) return;
 

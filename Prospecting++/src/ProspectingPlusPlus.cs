@@ -15,11 +15,11 @@ namespace ProspectingPlusPlus {
         public int sizeMultiplier = 1;
         public int costMultiplier = 1;
         public double falseNegativePercent = 0.0;
-        public String id = "node";
-        public String icon = "textures/icons/rocks.svg";
-        public String description = "Node Search Mode (Short range, exact search)";
+        public string id = "node";
+        public string icon = "textures/icons/rocks.svg";
+        public string description = "Node Search Mode (Short range, exact search)";
         public ProspectingNodeMode() {}
-        public ProspectingNodeMode(int sizeMult, int costMult, double failPerc, String id, String icon, String desc) {
+        public ProspectingNodeMode(int sizeMult, int costMult, double failPerc, string id, string icon, string desc) {
             sizeMultiplier = sizeMult;
             costMultiplier = costMult;
             falseNegativePercent = failPerc;

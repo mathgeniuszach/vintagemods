@@ -24,7 +24,7 @@ namespace EMTK {
 			CairoFont font = CairoFont.WhiteSmallText().WithFontSize(17f).WithLineHeightMultiplier(1.25);
 			double unscheight = screenManager.api.Gui.Text.GetMultilineTextHeight(
                 font, text, GuiElement.scaled(650.0), EnumLinebreakBehavior.Default
-            ) / (double)RuntimeEnv.GUIScale;
+            ) / RuntimeEnv.GUIScale;
 
 			ElementBounds titleBounds = ElementStdBounds.Rowed(0f, 0.0, EnumDialogArea.LeftFixed).WithFixedWidth(400.0);
 			ElementBounds btnBounds = ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 0.0, 0.0).WithFixedPadding(10.0, 2.0);

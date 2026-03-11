@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using HarmonyLib;
 
 using Vintagestory.API.Client;
@@ -19,7 +18,7 @@ namespace EMTK {
         public static readonly MethodInfo handlehandler = AccessTools.Method(typeof(GuiElementScrollbar), "UpdateHandlePositionAbs");
         public static readonly FieldInfo handlepos = AccessTools.Field(typeof(GuiElementScrollbar), "currentHandlePosition");
 
-        public static readonly string[] sortingMethods = new[] {
+        public static readonly string[] sortingMethods = [
             "Recently Updated",
             "Recently Added",
             "Most Downloads",
@@ -27,9 +26,9 @@ namespace EMTK {
             "Most Comments",
             "Most Trending",
             "Alphabetical",
-        };
+        ];
         public static readonly Dictionary<string, Func<IEnumerable<CustomModCellEntry>, IEnumerable<CustomModCellEntry>>> filters = 
-            new Dictionary<string, Func<IEnumerable<CustomModCellEntry>, IEnumerable<CustomModCellEntry>>>() {
+            new() {
                 {"Recently Updated", mx => mx.OrderByDescending(m => m.Summary.lastreleased)},
                 {"Most Downloads", mx => mx.OrderByDescending(m => m.Summary.downloads)},
                 {"Most Follows", mx => mx.OrderByDescending(m => m.Summary.follows)},
@@ -42,7 +41,7 @@ namespace EMTK {
         public ElementBounds clippingBounds;
         public ElementBounds listBounds;
 
-        public List<CustomModCellEntry> modCells = new List<CustomModCellEntry>();
+        public List<CustomModCellEntry> modCells = [];
         public int totalCount = 0;
         public string query = "";
         public string sortingMethod = "Recently Updated";
@@ -63,8 +62,8 @@ namespace EMTK {
             ModAPI.SetModEntryFont();
 			InitGui();
             
-			screenManager.GamePlatform.WindowResized += (int w, int h) => {invalidate();};
-			ClientSettings.Inst.AddWatcher<float>("guiScale", (float s) => {invalidate();});
+			screenManager.GamePlatform.WindowResized += (w, h) => {Invalidate();};
+			ClientSettings.Inst.AddWatcher<float>("guiScale", s => { Invalidate();});
 		}
 
         public void InitGui() {
@@ -81,12 +80,12 @@ namespace EMTK {
                 )
                 .AddStaticText("Filters:", CairoFont.WhiteSmallishText(), ElementBounds.Fixed(10.0, 45.0, 90.0, 30.0))
                 .AddDropDown(
-                    new[] {"any", "client", "server", "both"}, new[] {"Any-sided", "Client-only", "Server-only", "Both-sided"}, 0,
+                    ["any", "client", "server", "both"], ["Any-sided", "Client-only", "Server-only", "Both-sided"], 0,
                     (c, s) => {side = c; QueueReloadCells();},
                     ElementBounds.Fixed(90.0, 45.0, 115.0, 30.0), "queryside"
                 )
                 .AddDropDown(
-                    new[] {"both", "installed", "uninstalled"}, new[] {"Installed & Uninstalled", "Installed", "Uninstalled"}, 0,
+                    ["both", "installed", "uninstalled"], ["Installed & Uninstalled", "Installed", "Uninstalled"], 0,
                     (c, s) => {installed = c; QueueReloadCells();},
                     ElementBounds.Fixed(210.0, 45.0, 210.0, 30.0), "queryinstalled"
                 )
@@ -97,12 +96,12 @@ namespace EMTK {
                     ElementBounds.Fixed(90.0, 80.0, 170.0, 30.0), "querysortmethod"
                 )
                 .AddDropDown(
-                    new[] {"default", "reversed"}, new[] {"Descending", "Ascending"}, 0,
+                    ["default", "reversed"], ["Descending", "Ascending"], 0,
                     (c, s) => {ascending = c == "reversed"; QueueReloadCells();},
                     ElementBounds.Fixed(265.0, 80.0, 120.0, 30.0), "querysortreversed"
                 )
                 .AddDropDown(
-                    new[] {"5", "10", "25", "50", "100", "-1"}, new[] {"Show 5", "Show 10", "Show 25", "Show 50", "Show 100", "Show All"}, 0,
+                    ["5", "10", "25", "50", "100", "-1"], ["Show 5", "Show 10", "Show 25", "Show 50", "Show 100", "Show All"], 0,
                     (c, s) => {maxShown = int.Parse(c); QueueReloadCells();},
                     ElementBounds.Fixed(EnumDialogArea.RightTop, -5.0, 80.0, 110.0, 30.0), "querymaxcount"
                 )
@@ -118,7 +117,7 @@ namespace EMTK {
                 .BeginClip(clippingBounds = ElementBounds.Fixed(20.0, 120.0, box.Width-60.0, box.Height-150.0))
                     .AddCellList(
                         listBounds = clippingBounds.ForkContainingChild(0.0, 0.0, 0.0, 0.0).WithFixedPadding(0.0, 10.0),
-                        new OnRequireCell<CustomModCellEntry>(this.createCellElem),
+                        new OnRequireCell<CustomModCellEntry>(this.CreateCellElem),
                         null,
                         "modsbrowselist"
                     )
@@ -162,8 +161,8 @@ namespace EMTK {
 
             // Sort by sorting methods
             IEnumerable<CustomModCellEntry> cells = ModAPI.modCells;
-            if (filters.ContainsKey(sortingMethod)) {
-                cells = filters[sortingMethod](cells);
+            if (filters.TryGetValue(sortingMethod, out var filter)) {
+                cells = filter(cells);
             }
 
             if (ascending) cells = cells.Reverse();
@@ -180,11 +179,11 @@ namespace EMTK {
 
             // Sort by queries
             if (query.Length > 0) {
-                string[][] wordSets = query.Split(
-                    new[] {"|"}, StringSplitOptions.RemoveEmptyEntries
+                string[][] wordSets = [..query.Split(
+                    ["|"], StringSplitOptions.RemoveEmptyEntries
                 ).Select(s => s.Split(
-                    new char[] {' '}, StringSplitOptions.RemoveEmptyEntries
-                )).ToArray();
+                    [' '], StringSplitOptions.RemoveEmptyEntries
+                ))];
 
                 cells = cells.Where(m => {
                     string keywords = m.Keywords;
@@ -205,16 +204,16 @@ namespace EMTK {
             if (maxShown > 0) {
                 totalCount = cells.Count();
                 cells = cells.Take(maxShown);
-                modCells = cells.ToList();
+                modCells = [..cells];
             } else {
-                modCells = cells.ToList();
+                modCells = [..cells];
                 totalCount = modCells.Count;
             }
 
             return modCells;
 		}
 
-        public IGuiElementCell createCellElem(CustomModCellEntry cell, ElementBounds bounds) {
+        public IGuiElementCell CreateCellElem(CustomModCellEntry cell, ElementBounds bounds) {
 			return new GuiElementModCell(this.ScreenManager.api, cell, bounds, null) {
                 On = EMTK.loadedMods.ContainsKey(cell.ModID),
 				OnMouseDownOnCellLeft = new Action<int>(this.OnClickCellLeft),
@@ -226,7 +225,7 @@ namespace EMTK {
         volatile bool queuedReload = false;
         Thread reloadCellThread = null;
 
-        object reloadLock = new object();
+        readonly object reloadLock = new();
 
         public void QueueReloadCells() {
             if (!queueReloads) return;
@@ -257,7 +256,7 @@ namespace EMTK {
         }
 
         public void HideCells() {
-            this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").ReloadCells(new List<CustomModCellEntry>());
+            this.ElementComposer.GetCellList<CustomModCellEntry>("modsbrowselist").ReloadCells([]);
         }
 
         public void ReloadCells() {
@@ -274,24 +273,23 @@ namespace EMTK {
 
             this.ElementComposer.GetDynamicText("modcount").SetNewText(
                 maxShown > 0
-                    ? String.Format("{0} mods found; {1} shown", totalCount, Math.Min(modCells.Count, maxShown))
-                    : String.Format("{0} mods found", totalCount)
+                    ? string.Format("{0} mods found; {1} shown", totalCount, Math.Min(modCells.Count, maxShown))
+                    : string.Format("{0} mods found", totalCount)
             );
 
             if (oldScrollLoc > 0.0f) {
-                handlehandler.Invoke(this.ElementComposer.GetScrollbar("scrollbar"), new object[] {oldScrollLoc});
+                handlehandler.Invoke(this.ElementComposer.GetScrollbar("scrollbar"), [oldScrollLoc]);
                 oldScrollLoc = 0.0f;
             }
         }
 
         public override void OnScreenLoaded() {
-            this.invalidate();
+            this.Invalidate();
         }
 
         public void OnClickCellLeft(int cellIndex) {
             string modid = modCells[cellIndex].ModID.ToLower();
-            ModContainer mod = null;
-            EMTK.loadedMods.TryGetValue(modid, out mod);
+            EMTK.loadedMods.TryGetValue(modid, out ModContainer mod);
 
             EMTK.sm.LoadScreen(new GuiScreenModInfo(
                 modid, mod, EMTK.sm, this
@@ -332,7 +330,7 @@ namespace EMTK {
             guiCell.On = !guiCell.On;
         }
 
-        public void invalidate() {
+        public void Invalidate() {
             if (base.IsOpened) {
 				InitGui();
 				return;

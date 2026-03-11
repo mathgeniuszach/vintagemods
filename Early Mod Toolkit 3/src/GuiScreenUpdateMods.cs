@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 
 using HarmonyLib;
 
@@ -44,19 +43,19 @@ namespace EMTK {
 			this.ShowMainMenu = true;
             this.parentScreen = parentScreen;
 
-            modCells = new List<CustomModCellEntry>();
+            modCells = [];
             foreach (string modid in modUpdates) {
                 modCells.Add(new CustomModCellEntry() {
                     ModID = modid,
                     Title = modid,
                     DetailText = ModAPI.latestReleaseCache[modid].filename,
-                    RightTopText = String.Format("{0} -> {1}", EMTK.loadedMods[modid].Info.Version, ModAPI.latestVersionCache[modid])
+                    RightTopText = string.Format("{0} -> {1}", EMTK.loadedMods[modid].Info.Version, ModAPI.latestVersionCache[modid])
                 });
             }
 			InitGui();
-            
-			screenManager.GamePlatform.WindowResized += (int w, int h) => {invalidate();};
-			ClientSettings.Inst.AddWatcher<float>("guiScale", (float s) => {invalidate();});
+
+			screenManager.GamePlatform.WindowResized += (w, h) => {Invalidate();};
+			ClientSettings.Inst.AddWatcher<float>("guiScale", s => { Invalidate();});
 		}
 
         public void InitGui() {
@@ -76,7 +75,7 @@ namespace EMTK {
                 .BeginClip(clippingBounds = ElementBounds.Fixed(20.0, 40.0, box.Width-60.0, box.Height-95.0))
                     .AddCellList(
                         listBounds = clippingBounds.ForkContainingChild(0.0, 0.0, 0.0, 0.0).WithFixedPadding(0.0, 10.0),
-                        new OnRequireCell<CustomModCellEntry>(this.createCellElem),
+                        new OnRequireCell<CustomModCellEntry>(this.CreateCellElem),
                         modCells,
                         "modsupdatelist"
                     )
@@ -90,7 +89,7 @@ namespace EMTK {
                     ElementBounds.Fixed(EnumDialogArea.LeftBottom, 0.0, 0.0, 60.0, 30.0).WithFixedPadding(10.0, 2.0)
                 )
                 .Compose();
-            
+
             this.listBounds.CalcWorldBounds();
             this.clippingBounds.CalcWorldBounds();
 
@@ -102,27 +101,26 @@ namespace EMTK {
             );
 
             if (oldScrollLoc > 0) {
-                handlehandler.Invoke(this.ElementComposer.GetScrollbar("scrollbar"), new object[] {oldScrollLoc});
+                handlehandler.Invoke(this.ElementComposer.GetScrollbar("scrollbar"), [oldScrollLoc]);
             }
         }
 
         public bool UpdateMods() {
-            ConcurrentBag<Tuple<APIModRelease, ModContainer>> updates = new ConcurrentBag<Tuple<APIModRelease, ModContainer>>();
+            ConcurrentBag<Tuple<APIModRelease, ModContainer>> updates = [];
             foreach (CustomModCellEntry entry in modCells) {
                 if (!EMTK.Config.excludedFromUpdates.Contains(entry.ModID)) {
                     updates.Add(new Tuple<APIModRelease, ModContainer>(ModAPI.latestReleaseCache[entry.ModID], EMTK.loadedMods[entry.ModID]));
                 }
             }
 
-            ConcurrentBag<string> failed = new ConcurrentBag<string>();
+            ConcurrentBag<string> failed = [];
 
             // Download and install all mods in a concurrent way
-            List<Thread> threads = new List<Thread>();
+            List<Thread> threads = [];
             for (int i = 0; i < 8; i++) {
-                Thread t = new Thread(() => {
+                Thread t = new(() => {
                     while (true) {
-                        Tuple<APIModRelease, ModContainer> tuple;
-                        if (!updates.TryTake(out tuple)) return;
+                        if (!updates.TryTake(out Tuple<APIModRelease, ModContainer> tuple)) return;
 
                         // Download mod file
                         try {
@@ -155,7 +153,7 @@ namespace EMTK {
             foreach (Thread t in threads) t.Join();
 
             EMTK.sm.LoadScreen(new GuiScreenInfo(
-                "Updated all mods." + (failed.IsEmpty ? "" : "\r\nThese mods failed the update: " + String.Join(", ", failed)),
+                "Updated all mods." + (failed.IsEmpty ? "" : "\r\nThese mods failed the update: " + string.Join(", ", failed)),
                 () => {
                     EMTK.sm.LoadScreen(parentScreen);
                     AccessTools.Method(typeof(GuiScreenMods), "OnReloadMods").Invoke(parentScreen, null);
@@ -165,7 +163,7 @@ namespace EMTK {
             return true;
         }
 
-        public IGuiElementCell createCellElem(CustomModCellEntry cell, ElementBounds bounds) {
+        public IGuiElementCell CreateCellElem(CustomModCellEntry cell, ElementBounds bounds) {
 			var modcell = new GuiElementModCell(this.ScreenManager.api, cell, bounds, null) {
                 On = !EMTK.Config.excludedFromUpdates.Contains(cell.ModID.ToLower()),
 				OnMouseDownOnCellLeft = new Action<int>(this.OnClickCellLeft),
@@ -176,7 +174,7 @@ namespace EMTK {
 		}
 
         public override void OnScreenLoaded() {
-            this.invalidate();
+            this.Invalidate();
         }
 
         public void OnClickCellLeft(int cellIndex) {}
@@ -195,7 +193,7 @@ namespace EMTK {
             EMTKConfig.Save();
         }
 
-        public void invalidate() {
+        public void Invalidate() {
             if (base.IsOpened) {
                 InitGui();
                 return;

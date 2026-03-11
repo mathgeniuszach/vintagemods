@@ -129,8 +129,8 @@ namespace EMTK {
             string authors =
                 mod != null && (lmod == null || lmod.Info == null || lmod.Info.Authors.Count <= 1)
                     ? mod.author
-                    : String.Join(", ", lmod.Info.Authors);
-            // string authors = lmod != null ? String.Join(", ", lmod.Info.Authors) : mod.author;
+                    : string.Join(", ", lmod.Info.Authors);
+            // string authors = lmod != null ? string.Join(", ", lmod.Info.Authors) : mod.author;
 
             string side =
                 mod != null
@@ -194,10 +194,10 @@ namespace EMTK {
             };
             if (lmod != null) {
                 fields.Add("Type", lmod.Info.Type.ToString());
-                if (lmod?.Info?.Dependencies?.Count != null && lmod.Info.Dependencies.Count > 0) fields.Add("Requires", String.Join(", ", lmod.Info.Dependencies));
+                if (lmod?.Info?.Dependencies?.Count != null && lmod.Info.Dependencies.Count > 0) fields.Add("Requires", string.Join(", ", lmod.Info.Dependencies));
             }
             if (mod != null) {
-                fields.Add("Tags", String.Join(", ", mod.tags));
+                fields.Add("Tags", string.Join(", ", mod.tags));
                 fields.Add("Created", mod.created.ToLocalTime().ToString("yyyy MMM d, h:mm tt"));
 
                 var lmt = latestRelease != null ? latestRelease.created : mod.lastmodified;
@@ -313,7 +313,7 @@ namespace EMTK {
             } catch (Exception ex) {
                 ScreenManager.Platform.Logger.Error("Could not install {0}@{1}: {2}", modid, selectedVersion, ex);
 
-                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format("Could not install {0}@{1}. Check the log for more info.", modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
+                EMTK.sm.LoadScreen(new GuiScreenInfo(string.Format("Could not install {0}@{1}. Check the log for more info.", modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
             }
             return true;
         }
@@ -344,7 +344,7 @@ namespace EMTK {
                 string message = lmod?.SourcePath?.EndsWith(".dll") == true
                     ? "Could not uninstall {0}. Note that Vintage Story has some issues deleting dlls on Windows, which likely has occurred here."
                     : "Could not uninstall {0}. Check the log for more info.";
-                EMTK.sm.LoadScreen(new GuiScreenInfo(String.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
+                EMTK.sm.LoadScreen(new GuiScreenInfo(string.Format(message, modid, selectedVersion), () => EMTK.sm.LoadScreen(this), EMTK.sm, this));
             }
 
             return true;

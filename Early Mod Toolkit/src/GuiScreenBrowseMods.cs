@@ -273,8 +273,8 @@ namespace EMTK {
 
             this.ElementComposer.GetDynamicText("modcount").SetNewText(
                 maxShown > 0
-                    ? String.Format("{0} mods found; {1} shown", totalCount, Math.Min(modCells.Count, maxShown))
-                    : String.Format("{0} mods found", totalCount)
+                    ? string.Format("{0} mods found; {1} shown", totalCount, Math.Min(modCells.Count, maxShown))
+                    : string.Format("{0} mods found", totalCount)
             );
 
             if (oldScrollLoc > 0.0f) {

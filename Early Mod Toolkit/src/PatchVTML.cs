@@ -165,7 +165,7 @@ namespace EMTK {
                             if (v is VtmlTagToken && ((VtmlTagToken) v).Name == "li") {
                                 VtmlTagToken vtagToken = (VtmlTagToken) v;
                                 // This is the only way I could find to render the space correctly
-                                var x = new RichTextComponent(capi, "| " + String.Join("", Enumerable.Repeat("      ", listLevel-1)) + "- ", fontStack.Peek());
+                                var x = new RichTextComponent(capi, "| " + string.Join("", Enumerable.Repeat("      ", listLevel-1)) + "- ", fontStack.Peek());
                                 elems.Add(x);
                                 elems.Add(new RichTextComponent(capi, " ", fontStack.Peek()));
                                 foreach (VtmlToken vi in vtagToken.ChildElements) {
@@ -188,7 +188,7 @@ namespace EMTK {
                                 VtmlTagToken vtagToken = (VtmlTagToken) v;
                                 // This is the only way I could find to render the space correctly
                                 elems.Add(
-                                    new RichTextComponent(capi, "│ " + String.Join("", Enumerable.Repeat("      ", listLevel-1)) + ++n + ". ", fontStack.Peek())
+                                    new RichTextComponent(capi, "│ " + string.Join("", Enumerable.Repeat("      ", listLevel-1)) + ++n + ". ", fontStack.Peek())
                                 );
                                 elems.Add(new RichTextComponent(capi, " ", fontStack.Peek()));
                                 foreach (VtmlToken vi in vtagToken.ChildElements) {

@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>3.2.0-beta.1</Version>
+    <Version>3.3.0</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8</TargetFramework>
+    <NoWarn>CA2211;CA1822;IDE0130;IDE0060</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -11,7 +12,7 @@
     <VintagestoryBin Condition="Exists('/home/$(USER)/.local/share/vintagestory/Vintagestory.dll')">~/ApplicationData/vintagestory</VintagestoryBin>
     <VintagestoryBin Condition="Exists('/usr/share/vintagestory/Vintagestory.dll')">/usr/share/vintagestory</VintagestoryBin>
     <VintagestoryBin Condition="Exists('/opt/vintagestory/Vintagestory.dll')">/opt/vintagestory</VintagestoryBin>
-    
+
     <VintagestoryBin Condition="Exists('$(AppData)/Vintagestory/Vintagestory.dll')">$(AppData)/Vintagestory</VintagestoryBin>
     <VintagestoryBin Condition="Exists('C:/Program Files/Vintagestory/Vintagestory.dll')">C:/Program Files/Vintagestory</VintagestoryBin>
     <VintagestoryBin Condition="Exists('C:/Program Files (x86)/Vintagestory/Vintagestory.dll')">C:/Program Files (x86)/Vintagestory</VintagestoryBin>

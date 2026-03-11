@@ -196,7 +196,7 @@ namespace EMTK {
 
         public static void copyModProfile(bool obj) {
             // Not implemented on linux I guess? Oh well, screw you I guess.
-            EMTK.sm.api.Input.ClipboardText = String.Join(", ", EMTK.loadedMods
+            EMTK.sm.api.Input.ClipboardText = string.Join(", ", EMTK.loadedMods
                 .Where(mod => mod.Value?.Info?.Version != null)
                 .Select(mod => {
                     return mod.Key + "@" + mod.Value.Info.Version.ToString();

@@ -73,7 +73,7 @@ namespace EMTK {
                 }
 
                 // Query the api for all updates
-                string joined = String.Join(",", queryMods);
+                string joined = string.Join(",", queryMods);
                 while (joined.Length > 1900) {
                     int s = joined.LastIndexOf(',', 1900);
                     MakeUpdatesQuery(joined.Substring(0, s));
@@ -138,15 +138,15 @@ namespace EMTK {
                             string modid = summary.modidstrs[0].ToLower();
                             modCells.Add(new CustomModCellEntry() {
                                 ModID = modid,
-                                Keywords = String.Join(" ", modid, summary?.name, summary?.author, summary?.tags).ToLower(),
+                                Keywords = string.Join(" ", modid, summary?.name, summary?.author, summary?.tags).ToLower(),
                                 Summary = summary,
                                 Title = summary?.name,
-                                DetailText = String.Format("{0}\n{1} - {2}",
+                                DetailText = string.Format("{0}\n{1} - {2}",
                                     summary?.author,
                                     char.ToUpper(summary.side[0]) + summary.side.Substring(1),
-                                    String.Join(", ", summary.tags)
+                                    string.Join(", ", summary.tags)
                                 ),
-                                RightTopText = String.Format("{0} Downloads,\n{1} Follows, {2} Comments", summary?.downloads, summary?.follows, summary?.comments),
+                                RightTopText = string.Format("{0} Downloads,\n{1} Follows, {2} Comments", summary?.downloads, summary?.follows, summary?.comments),
                                 TitleFont = medFont,
                                 DetailTextFont = smallFont,
                             });

@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Diagnostics;
 using System;
@@ -112,14 +111,14 @@ namespace EMTK {
         public static void LoadModInfo(ModContainer __instance) {
             try {
                 if (__instance.Icon == null) {
-                    AccessTools.PropertySetter(typeof(ModContainer), "Icon").Invoke(__instance, new[] {
+                    AccessTools.PropertySetter(typeof(ModContainer), "Icon").Invoke(__instance, [
                         ScreenManager.Platform.CreateBitmapFromPng(EMTK.sm.api.Assets.Get("game:textures/gui/3rdpartymodicon.png"))
-                    });
+                    ]);
                 }
             } catch (MissingMethodException) {}
         }
 
-        public static Stopwatch timer = new Stopwatch();
+        public static Stopwatch timer = new();
 
         public static bool IsOverride(MethodInfo m) {
             return m.GetBaseDefinition().DeclaringType != m.DeclaringType;
@@ -170,7 +169,7 @@ namespace EMTK {
                 __result = true;
 				return false;
 			} catch (Exception ex) {
-				mod.Logger.Error("An exception was thrown when trying to run mod system \"{0}\" phase \"{1}\":\n{2}", new object[] { system.GetType().Name, phase, ex });
+				mod.Logger.Error("An exception was thrown when trying to run mod system \"{0}\" phase \"{1}\":\n{2}", [system.GetType().Name, phase, ex]);
             } finally {
                 timer.Stop();
             }
