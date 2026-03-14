@@ -10,7 +10,7 @@ using ProperVersion;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
+using VSD = Vintagestory.API.Datastructures;
 using Vintagestory.Client;
 using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
@@ -149,12 +149,12 @@ namespace EMTK {
             earlyModsCache.Sort((a, b) => a.emi.LoadOrder.CompareTo(b.emi.LoadOrder));
 
             // Setup origin locations for preloading assets
-            var contentAssetOrigins = new OrderedDictionary<string, IAssetOrigin>();
-			var themeAssetOrigins = new OrderedDictionary<string, IAssetOrigin>();
+            var contentAssetOrigins = new VSD.OrderedDictionary<string, IAssetOrigin>();
+			var themeAssetOrigins = new VSD.OrderedDictionary<string, IAssetOrigin>();
             AccessTools.Field(typeof(ModLoader), "contentAssetOrigins").SetValue(modloader, contentAssetOrigins);
             AccessTools.Field(typeof(ModLoader), "themeAssetOrigins").SetValue(modloader, themeAssetOrigins);
 
-			var textureSizes = new OrderedDictionary<string, int>();
+			var textureSizes = new VSD.OrderedDictionary<string, int>();
 			foreach (ModContainer mod in mods) {
 				if (mod.FolderPath != null && Directory.Exists(Path.Combine(mod.FolderPath, "assets"))) {
                     if (mod.Info.Type == EnumModType.Theme) {

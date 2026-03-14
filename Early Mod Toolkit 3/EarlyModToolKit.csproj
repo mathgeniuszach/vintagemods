@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>3.3.0</Version>
+    <Version>3.4.0</Version>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <NoWarn>CA2211;CA1822;IDE0130;IDE0060</NoWarn>
   </PropertyGroup>
 
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <Target Name="Package" AfterTargets="PostBuildEvent">
-    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="bin/Debug/net8" Overwrite="true"/>
+    <ZipDirectory DestinationFile="bin/$(TargetName)-$(Version).zip" SourceDirectory="bin/Debug/net10.0" Overwrite="true"/>
   </Target>
 
 </Project>
